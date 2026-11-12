@@ -1,0 +1,29 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "lpDist_eq_toLp_dist",
+    "thm_1_2_geometric_spanner_lower_bound",
+    "thm_1_3_non_metric_steiner_spanner_lower_bound",
+    "cor_1_4_lp_dvoretzky_lower_bound",
+    "thm_2_1a_metric_nearest_terminal_projection",
+    "thm_2_1b_hypercube_lp_reduction",
+    "thm_2_2a_last_hit_edge_charging",
+    "thm_2_2b_biclique_bottleneck",
+    "thm_2_3_locally_list_bounded_csp_codes",
+    "prop_3_1_diameter_bounded_bucketing",
+    "prop_3_2_simplex_separation",
+    "lem_3_3_blockwise_hamming_hubs",
+    "prop_3_4_three_hop_hypercube_collapse",
+    "lem_5_1_interval_crossing",
+    "lem_6_3_biclique_list_hit"
+  ],
+  "must_resolve_all_sorries": true,
+  "allow_disproofs": false,
+  "enable_nanoda": false,
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

@@ -1,0 +1,32 @@
+# Lean / Lake build output and downloaded dependencies (Mathlib, etc.)
+/.lake/
+/lake-packages/
+/build/
+*.olean
+*.olean.*
+*.ilean
+*.ilean.*
+*.trace
+*.hash
+*.c.o*
+
+# Archives
+*.tar.gz
+*.tgz
+*.zip
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Editor / OS
+.DS_Store
+.vscode/
+__pycache__/
