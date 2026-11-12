@@ -9,6 +9,7 @@
 \usepackage{booktabs}
 \usepackage{enumitem}
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathreplacing,calc}
 \usepackage[dvipsnames]{xcolor}
 \usepackage[colorlinks=true,linkcolor=MidnightBlue,citecolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
 
@@ -18,6 +19,7 @@
 \newtheorem{corollary}[theorem]{Corollary}
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
+\newtheorem*{definition*}{Definition}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 \usepackage{comment}
@@ -88,16 +90,99 @@ The theorem also separates two ways of storing a metric. For general metrics, th
 \subsection{Our Results}
 \label{subsec:results}
 
-\begin{definition}[Spanners and Steiner Spanners]
+\begin{definition}[Spanners, Steiner Spanners, and Aspect Ratio]
 \label{def:spanner}
-Let $(P, \dP)$ be a finite metric space on $|P| = n \ge 2$ \emph{terminals}, and let $C \ge 1$. For a finite undirected simple graph $H = (P \sqcup S, E, w)$ with non-negative edge weights $w : E \to \R_{\ge 0}$ and a finite set $S$ of \emph{Steiner vertices}, let $\dH(u, v) \in [0, \infty]$ denote the shortest-path distance between $u$ and $v$ in $H$ (with $\dH(u, v) = \infty$ if $u$ and $v$ lie in different components). We call $H$ an \emph{undirected non-metric Steiner $C$-spanner} of $(P, \dP)$, of \emph{stretch} $C$, if
+Given a finite metric space $(P, \dP)$ on $n = |P| \ge 2$ input points (called \emph{terminals}) and a target \emph{stretch} $C \ge 1$, a $C$-spanner is an undirected weighted graph whose shortest paths never underestimate distances between terminals and overestimate them by at most a factor of $C$.
+
+Formally, let $H = (P \sqcup S, E, w)$ be a finite undirected simple graph on the terminals $P$ together with a finite set $S$ of auxiliary \emph{Steiner vertices} ($P \cap S = \emptyset$), equipped with non-negative edge weights $w : E \to \R_{\ge 0}$. Let $\dH(u, v) \in [0, \infty]$ denote the shortest-path distance between $u$ and $v$ in $H$ (with $\dH(u, v) = \infty$ if $u$ and $v$ lie in different connected components). Depending on which auxiliary vertices and edge weights are permitted, we distinguish the following notions (Figure~\ref{fig:spanner-models}):
+\begin{itemize}[leftmargin=2em,nosep,topsep=4pt,itemsep=3pt]
+  \item \textbf{Undirected non-metric Steiner $C$-spanner} (hereafter simply \textbf{Steiner $C$-spanner}): $S$ may be any finite set and $w : E \to \R_{\ge 0}$ may assign arbitrary non-negative weights, provided that
+  \[
+  \dP(x, y) \;\le\; \dH(x, y) \;\le\; C \cdot \dP(x, y) \qquad \text{for all } x, y \in P.
+  \]
+  \item \textbf{Metric Steiner $C$-spanner}: a Steiner $C$-spanner in which $P \sqcup S$ lies in an ambient metric space $(X, \mathrm{d}_X)$ extending $\dP$, and every edge carries its ambient metric distance $w(\{u, v\}) = \mathrm{d}_X(u, v)$.
+  \item \textbf{Geometric $C$-spanner}: a Steiner $C$-spanner with no auxiliary vertices ($S = \emptyset$) in which every edge carries the exact terminal distance $w(\{x, y\}) = \dP(x, y)$.
+  \item \textbf{$k$-hop $C$-spanner}: a spanner $H$ (in any of the models above) in which every pair of distinct terminals $x, y \in P$ is joined by a simple path in $H$ of at most $k$ edges and total weight at most $C \cdot \dP(x, y)$.
+\end{itemize}
+Finally, for a finite point set $P \subset \R^d$ ($|P| \ge 2$) and $p \in [1, \infty)$, its $\ell_p$ \emph{aspect ratio} is the ratio of its largest to smallest nonzero pairwise distance,
 \[
-\dP(x, y) \;\le\; \dH(x, y) \;\le\; C \cdot \dP(x, y) \qquad \text{for all } x, y \in P.
+\Delta_p(P) \;:=\; \frac{\max_{x \ne y \in P} \|x - y\|_p}{\min_{x \ne y \in P} \|x - y\|_p}.
 \]
-When $S = \emptyset$ and $w(\{x, y\}) = \dP(x, y)$ for every $\{x, y\} \in E$, we call $H$ a \emph{geometric $C$-spanner}; when $P \sqcup S$ lies in an ambient metric space $(X, \mathrm{d}_X)$ extending $\dP$ and $w(\{u, v\}) = \mathrm{d}_X(u, v)$ for every $\{u, v\} \in E$, we call $H$ a \emph{metric Steiner $C$-spanner}.
 \end{definition}
 
-All spanners in our results are undirected, and from now on a \emph{Steiner $C$-spanner} means an undirected non-metric Steiner $C$-spanner. For a finite set $P \subset \R^d$ ($|P| \ge 2$) and $p \in [1, \infty)$, we write $\Delta_p(P) := \max_{x \ne y \in P} \|x - y\|_p / \min_{x \ne y \in P} \|x - y\|_p$ for its $\ell_p$ \emph{aspect ratio}. Throughout, $O_{C, p}(\cdot)$ and $\Theta_{C, p}(\cdot)$ hide constants that depend only on $C$ and $p$ (and similarly for other subscripts), and $\tilde{O}(\cdot)$ hides polylogarithmic factors.
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[every node/.style={font=\small}]
+  % === Panel (a): Geometric C-spanner ===
+  \begin{scope}[shift={(0, 0)}]
+    \foreach \i/\ang in {1/90, 2/162, 3/234, 4/306, 5/18} {
+      \coordinate (a\i) at (\ang:1.25cm);
+    }
+    \foreach \i in {1,...,4} {
+      \pgfmathtruncatemacro{\nexti}{\i + 1}
+      \foreach \j in {\nexti,...,5} {
+        \draw[thick, MidnightBlue!75] (a\i) -- (a\j);
+      }
+    }
+    \foreach \i in {1,...,5} {
+      \filldraw[MidnightBlue] (a\i) circle (2.3pt);
+    }
+    \node[MidnightBlue!90!black, fill=white, inner sep=1pt] at (0, 0.42) {\footnotesize $w = D$};
+    \node[align=center] at (0, -1.85) {(a) Geometric spanner ($S = \emptyset$):\\[-1pt]{\footnotesize $\binom{n}{2}$ edges for $C < 2$}};
+  \end{scope}
+
+  % === Panel (b): 2-hop Steiner 1-spanner (star) ===
+  \begin{scope}[shift={(4.8, 0)}]
+    \coordinate (hub) at (0, 0);
+    \foreach \i/\ang in {1/90, 2/162, 3/234, 4/306, 5/18} {
+      \coordinate (b\i) at (\ang:1.25cm);
+      \draw[thick, MidnightBlue!75] (hub) -- (b\i);
+    }
+    \foreach \i in {1,...,5} {
+      \filldraw[MidnightBlue] (b\i) circle (2.3pt);
+    }
+    \draw[fill=white, very thick, BrickRed] (hub) circle (2.8pt);
+    \node[BrickRed, fill=white, inner sep=1pt] at (0.0, -0.45) {\footnotesize $s \in S$};
+    \node[MidnightBlue!90!black, fill=white, inner sep=1pt] at (-0.68, 0.56) {\footnotesize $D/2$};
+    \node[align=center] at (0, -1.85) {(b) $2$-hop Steiner $1$-spanner:\\[-1pt]{\footnotesize $n$ edges via one hub $s$}};
+  \end{scope}
+
+  % === Panel (c): General non-metric Steiner C-spanner ===
+  \begin{scope}[shift={(10.2, 0)}]
+    \coordinate (x) at (-1.65, 0.65);
+    \coordinate (z1) at (-1.45, -0.75);
+    \coordinate (y) at (1.65, 0.65);
+    \coordinate (z2) at (1.45, -0.75);
+    \coordinate (s1) at (-0.75, 0.05);
+    \coordinate (s2) at (0.0, 0.65);
+    \coordinate (s3) at (0.75, 0.05);
+
+    \draw[thick, gray!70] (z1) -- (s1);
+    \draw[thick, gray!70] (s1) -- (s3);
+    \draw[thick, gray!70] (z2) -- (s3);
+    \draw[very thick, MidnightBlue] (x) -- node[below left=0pt, font=\scriptsize] {$w_1$} (s1)
+      -- node[above=1pt, font=\scriptsize] {$0$} (s2)
+      -- node[above=1pt, font=\scriptsize] {$w_2$} (s3)
+      -- node[below right=0pt, font=\scriptsize] {$w_3$} (y);
+
+    \filldraw[MidnightBlue] (x) circle (2.3pt) node[above left=1pt] {$x$};
+    \filldraw[MidnightBlue] (y) circle (2.3pt) node[above right=1pt] {$y$};
+    \filldraw[MidnightBlue] (z1) circle (2.3pt);
+    \filldraw[MidnightBlue] (z2) circle (2.3pt);
+
+    \draw[fill=white, very thick, BrickRed] (s1) circle (2.6pt);
+    \draw[fill=white, very thick, BrickRed] (s2) circle (2.6pt);
+    \draw[fill=white, very thick, BrickRed] (s3) circle (2.6pt);
+    \node[BrickRed, fill=white, inner sep=1pt] at (0, -0.78) {\footnotesize Steiner network $S$};
+
+    \node[align=center] at (0, -1.85) {(c) General Steiner $C$-spanner:\\[-1pt]{\footnotesize arbitrary $S$, hops, and $w(e) \ge 0$}};
+  \end{scope}
+\end{tikzpicture}
+\caption{Spanner models in Definition~\ref{def:spanner} (solid blue circles: terminals in $P$; open red circles: Steiner vertices in $S$). On $n$ points at pairwise distance $D$, a geometric $C$-spanner with $C < 2$ requires all $\binom{n}{2}$ edges~(a), whereas a single Steiner hub with spoke weights $D/2$ achieves stretch $1$ in $n$ edges~(b). Theorem~\ref{thm:main} holds against arbitrary Steiner $C$-spanners~(c), where shortest paths may use any number of Steiner vertices and arbitrary weights $w(e) \ge 0$ (including $0$) subject only to $\dP(x, y) \le \dH(x, y) \le C \cdot \dP(x, y)$ on $P$.}
+\label{fig:spanner-models}
+\end{figure}
+
+Throughout, all spanners in our results are undirected, $O_{C, p}(\cdot)$ and $\Theta_{C, p}(\cdot)$ hide constants that depend only on $C$ and $p$ (and similarly for other subscripts), and $\tilde{O}(\cdot)$ hides polylogarithmic factors.
 
 Our main result is a lower bound for Steiner spanners. We first state its consequence for geometric spanners.
 
@@ -228,21 +313,34 @@ Section~\ref{sec:overview} states the three steps of the proof as Theorems~\ref{
 
 This section states the three results into which the proof of Theorem~\ref{thm:main} decomposes and derives Theorems~\ref{thm:geometric} and~\ref{thm:main} from them. The three results are proved in Sections~\ref{sec:projection}, \ref{sec:combinatorics}, and~\ref{sec:csp-cloud}, which can be read independently, except that Section~\ref{sec:csp-cloud} uses Theorem~\ref{thm:mod2-combinatorial}(b). Probability is used only in Section~\ref{sec:csp-cloud}.
 
-\paragraph{Notation: codes, the one-hot embedding, and close pairs.}
-For a metric space $(P, \dP)$, write $B_P(x, \rho) := \{w \in P : \dP(x, w) \le \rho\}$. For an integer $m \ge 0$, write $[m] := \{1, \dots, m\}$ (with $[0] := \emptyset$). Fix integers $N, q \ge 2$; for strings $x, y \in [q]^N$, let $\Delta(x, y) := \{v \in [N] : x_v \ne y_v\}$ be the set of coordinates in which they differ, and let $\dHam(x, y) := |\Delta(x, y)|$ be their Hamming distance. We refer to subsets $\mathcal{X} \subseteq [q]^N$ as \emph{codes}, to their elements as \emph{codewords}, and we write $B_{\mathcal{X}}(x, \rho) := \{w \in \mathcal{X} : \dHam(x, w) \le \rho\}$. The \emph{one-hot embedding} $\iota : [q]^N \to \{0, 1\}^{N q} \subset \R^{N q}$ replaces every symbol by its indicator vector:
-\[
-\iota(x)_{v, c} \;:=\; \mathbf{1}[x_v = c] \qquad \text{for } v \in [N] \text{ and } c \in [q].
-\]
-Given an integer $r_* \ge 1$, an ordered pair $(x, y) \in \mathcal{X}^2$ is a \emph{close pair} if $\dHam(x, y) = r_*$, and
-\[
-E_{r_*}(\mathcal{X}) \;:=\; \{(x, y) \in \mathcal{X}^2 : \dHam(x, y) = r_*\}
-\]
-denotes the set of close pairs of $\mathcal{X}$.
+\begin{definition*}[Codes, One-Hot Embedding, and Close Pairs]
+Our hard point sets in the Boolean hypercube are built by taking strings of length $N$ over an alphabet $[q] := \{1, \dots, q\}$ (for integers $N, q \ge 2$; in general we write $[m] := \{1, \dots, m\}$ with $[0] := \emptyset$) and encoding each symbol by its $q$-bit indicator vector, so that $\ell_p$ distances in the hypercube become a fixed power of Hamming distances between strings:
+\begin{itemize}[leftmargin=2em,nosep,topsep=4pt,itemsep=3pt]
+  \item \textbf{Codes, Hamming distance, and balls.} For strings $x, y \in [q]^N$, we write $\Delta(x, y) := \{v \in [N] : x_v \ne y_v\}$ for the set of coordinates in which they differ, and $\dHam(x, y) := |\Delta(x, y)|$ for their \emph{Hamming distance}. A subset $\mathcal{X} \subseteq [q]^N$ is called a \emph{code} and its elements \emph{codewords}. We write $B_{\mathcal{X}}(x, \rho) := \{w \in \mathcal{X} : \dHam(x, w) \le \rho\}$ for the closed Hamming ball of radius $\rho$ around $x$ in $\mathcal{X}$, and more generally $B_P(x, \rho) := \{w \in P : \dP(x, w) \le \rho\}$ in any metric space $(P, \dP)$.
+  \item \textbf{One-hot embedding.} The \emph{one-hot embedding} $\iota : [q]^N \to \{0, 1\}^{N q} \subset \R^{N q}$ replaces every symbol $x_v \in [q]$ by its $q$-bit indicator vector, setting
+  \[
+  \iota(x)_{v, c} \;:=\; \mathbf{1}[x_v = c] \qquad \text{for } v \in [N] \text{ and } c \in [q].
+  \]
+  \item \textbf{Close pairs.} Given a target distance $r_* \ge 1$, an ordered pair $(x, y) \in \mathcal{X}^2$ is called a \emph{close pair} if $\dHam(x, y) = r_*$, and
+  \[
+  E_{r_*}(\mathcal{X}) \;:=\; \{(x, y) \in \mathcal{X}^2 : \dHam(x, y) = r_*\}
+  \]
+  denotes the set of all close pairs of $\mathcal{X}$.
+\end{itemize}
+\end{definition*}
 
 \subsection{Step 1: Removing Steiner Vertices and Weights}
 \label{subsec:mod1}
 
-The first step replaces an arbitrary Steiner spanner by an unweighted graph on the terminals which has no more edges and in which nearby terminals are connected by paths that stay nearby. For codes, we give the resulting object a name. Let $\mathcal{X} \subseteq [q]^N$ be a code and let $C_1, r_* \ge 1$ be integers. An unweighted simple graph $\widehat{G} = (\mathcal{X}, \widehat{E})$ is a \emph{$(C_1, r_*)$-local connector} for $\mathcal{X}$ if every edge $\{a, b\} \in \widehat{E}$ satisfies $0 < \dHam(a, b) \le C_1 r_*$, and every close pair $(x, y) \in E_{r_*}(\mathcal{X})$ is joined by a simple path in $\widehat{G}$ all of whose vertices lie in $B_{\mathcal{X}}(x, C_1 r_*)$.
+The first step replaces an arbitrary Steiner spanner by an unweighted graph on the terminals alone that has no more edges and still connects nearby pairs locally.
+
+\begin{definition*}[Local Connector]
+To capture what remains of a spanner on a code $\mathcal{X} \subseteq [q]^N$ after discarding Steiner vertices, edge weights, and long-range distances at scale $r_*$, let $C_1, r_* \ge 1$ be integers. An unweighted simple graph $\widehat{G} = (\mathcal{X}, \widehat{E})$ is a \emph{$(C_1, r_*)$-local connector} for $\mathcal{X}$ if:
+\begin{enumerate}[label=(\arabic*),leftmargin=2em,nosep,topsep=4pt,itemsep=3pt]
+  \item \emph{(Short edges.)} Every edge $\{a, b\} \in \widehat{E}$ satisfies $0 < \dHam(a, b) \le C_1 r_*$.
+  \item \emph{(Local paths for close pairs.)} Every close pair $(x, y) \in E_{r_*}(\mathcal{X})$ is joined in $\widehat{G}$ by a simple path all of whose vertices lie in the Hamming ball $B_{\mathcal{X}}(x, C_1 r_*)$.
+\end{enumerate}
+\end{definition*}
 
 Part~(a) of the following theorem is the general statement. Part~(b) applies it to a code under the one-hot embedding and records two facts about the embedding: it turns Hamming distance $h$ into $\ell_p$-distance $(2h)^{1/p}$, and it maps a code of length $N = 2^L r_*$ and minimum distance at least $\frac{1}{2} r_*$ to a point set of aspect ratio at most $2^{L + 1}$.
 
@@ -262,16 +360,63 @@ Part~(a) of the following theorem is the general statement. Part~(b) applies it 
 \subsection{Step 2: Counting Close Pairs with Lists}
 \label{subsec:mod2}
 
-The second step is a charging argument. It shows that the number of edges of a local connector for a code $\mathcal{X}$ is at least a constant times the number of close pairs of $\mathcal{X}$, provided that $\mathcal{X}$ comes with a suitable family of \emph{lists}. A list $\mathcal{L}(a, b) \subseteq \mathcal{X}$ is attached to every ordered pair $(a, b)$ of codewords; it depends on the code only, and not on any graph.
+The second step is a charging argument showing that no single edge of a local connector can serve many close pairs, provided that the code comes with a short roster $\mathcal{L}(a, b) \subseteq \mathcal{X}$ of candidate origins $x$ for every ordered pair $(a, b)$ of nearby codewords (Figure~\ref{fig:list-charging}).
 
-The lists must satisfy three conditions. To read the last two, think of $x$ as the first element of a close pair $(x, y)$, and say that a codeword $w$ is \emph{aligned with} $y$ if $w$ differs from $x$ in more than a quarter of the $r_*$ coordinates in which $y$ differs from $x$, that is, if $|\Delta(x, w) \cap \Delta(x, y)| > \frac{1}{4} r_*$. The first condition says that the lists are short. The second says that a codeword $w_0$ is aligned with only a few $y$. The third says that a walk near $x$ which starts at a codeword $w_0$ not aligned with $y$, and which ends at $y$, must traverse a step whose list contains $x$.
+\begin{definition*}[Alignment and $K$-Bounded List Systems]
+Think of $\mathcal{L}(a, b) \subseteq \mathcal{X}$ as a graph-independent roster of origins $x$ whose paths the directed step $(a, b)$ can serve. Given a close pair $(x, y) \in E_{r_*}(\mathcal{X})$, we say that a codeword $w \in \mathcal{X}$ is \emph{aligned with} $y$ (relative to $x$) if $w$ already agrees with $y$'s departure from $x$ on more than a quarter of the $r_*$ coordinates where $y$ differs from $x$, that is, if $|\Delta(x, w) \cap \Delta(x, y)| > \frac{1}{4} r_*$.
 
-Formally, let $\mathcal{X} \subseteq [q]^N$ be a code and let $C_1, r_*, K \ge 1$ be integers. A map $\mathcal{L} : \mathcal{X}^2 \to 2^{\mathcal{X}}$ is a \emph{$K$-bounded list system} for $\mathcal{X}$, with parameters $C_1$ and $r_*$, if it satisfies the following three conditions.
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{(List-Size)} $|\mathcal{L}(a, b)| < K$ for all $(a, b) \in \mathcal{X}^2$ with $0 < \dHam(a, b) \le C_1 r_*$.
-  \item \textbf{(Overlap)} For every $(x, w_0) \in \mathcal{X}^2$ with $0 < \dHam(x, w_0) \le C_1 r_*$, fewer than $K$ points $y \in \mathcal{X} \setminus \{x, w_0\}$ satisfy $\dHam(x, y) = r_*$ and $|\Delta(x, w_0) \cap \Delta(x, y)| > \frac{1}{4} r_*$.
-  \item \textbf{(List-Hit)} Whenever $x \in \mathcal{X}$ and $w_0, \dots, w_\ell \in B_{\mathcal{X}}(x, C_1 r_*) \setminus \{x\}$ ($\ell \ge 1$) satisfy $0 < \dHam(w_{s-1}, w_s) \le C_1 r_*$ for $1 \le s \le \ell$, $\dHam(x, w_\ell) = r_*$, and $|\Delta(x, w_0) \cap \Delta(x, w_\ell)| \le \frac{1}{4} r_*$, there exists $s \in \{1, \dots, \ell\}$ with $x \in \mathcal{L}(w_{s-1}, w_s)$.
+Formally, let $\mathcal{X} \subseteq [q]^N$ be a code and let $C_1, r_*, K \ge 1$ be integers. A map $\mathcal{L} : \mathcal{X}^2 \to 2^{\mathcal{X}}$ (defined from $\mathcal{X}$ alone, independent of any graph) is a \emph{$K$-bounded list system} for $\mathcal{X}$, with parameters $C_1$ and $r_*$, if:
+\begin{itemize}[leftmargin=2em,topsep=4pt,itemsep=3pt]
+  \item \textbf{(List-Size)} \emph{(Every short step has a short list.)} $|\mathcal{L}(a, b)| < K$ for all $(a, b) \in \mathcal{X}^2$ with $0 < \dHam(a, b) \le C_1 r_*$.
+  \item \textbf{(Overlap)} \emph{(Each vertex aligns with few close partners.)} For every $(x, w_0) \in \mathcal{X}^2$ with $0 < \dHam(x, w_0) \le C_1 r_*$, fewer than $K$ points $y \in \mathcal{X} \setminus \{x, w_0\}$ with $\dHam(x, y) = r_*$ are such that $w_0$ is aligned with $y$, i.e., satisfy $|\Delta(x, w_0) \cap \Delta(x, y)| > \frac{1}{4} r_*$.
+  \item \textbf{(List-Hit)} \emph{(Walking from an unaligned start to $y$ hits $x$'s list.)} Whenever $x \in \mathcal{X}$ and a walk $w_0, \dots, w_\ell \in B_{\mathcal{X}}(x, C_1 r_*) \setminus \{x\}$ ($\ell \ge 1$) of short steps $0 < \dHam(w_{s-1}, w_s) \le C_1 r_*$ ($1 \le s \le \ell$) starts at a vertex $w_0$ not aligned with its close-partner endpoint $w_\ell$---meaning $\dHam(x, w_\ell) = r_*$ and $|\Delta(x, w_0) \cap \Delta(x, w_\ell)| \le \frac{1}{4} r_*$---there exists a step $s \in \{1, \dots, \ell\}$ with $x \in \mathcal{L}(w_{s-1}, w_s)$.
 \end{itemize}
+\end{definition*}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[every node/.style={font=\small}, >={Stealth[length=5pt]}]
+  % Outer ball B_X(x, C_1 r_*)
+  \draw[dashed, thick, MidnightBlue!65] (5.35, -0.15) ellipse (7.15cm and 2.55cm);
+  \node[MidnightBlue!85!black, fill=white, inner sep=1.5pt] at (5.35, 2.4) {Hamming ball $B_{\mathcal{X}}(x, C_1 r_*)$};
+
+  % Nodes along the local path from x to y
+  \coordinate (x) at (-0.35, 0.2);
+  \coordinate (u1) at (1.25, 0.65);
+  \coordinate (usprev) at (2.95, 0.45);
+  \coordinate (w0) at (6.05, 0.45);
+  \coordinate (w1) at (8.25, 0.72);
+  \coordinate (y) at (10.75, 0.15);
+
+  % Prefix path
+  \draw[->, thick, gray!80!black] (x) -- (u1);
+  \draw[->, thick, gray!80!black, densely dotted] (u1) -- (usprev);
+
+  % Last marked step (u_{s_0 - 1}, w_0)
+  \draw[->, ultra thick, BrickRed] (usprev) -- node[above=4pt, align=center, font=\footnotesize, text=BrickRed] {last marked step\\[-1pt]$x \in \{u_{s_0-1}\} \cup \mathcal{L}(u_{s_0-1}, w_0)$} (w0);
+
+  % Unmarked suffix w_0 -> ... -> y
+  \draw[->, thick, MidnightBlue!80, dashed] (w0) -- (w1);
+  \draw[->, thick, MidnightBlue!80, dashed] (w1) -- (y);
+  \node[MidnightBlue!85!black, above=4pt, align=center, font=\footnotesize] at (8.05, 0.76) {no step has $x \in \mathcal{L}(\cdot, \cdot)$};
+
+  % Alignment curve from w_0 to y
+  \draw[<->, thick, OliveGreen!80!black] (5.95, -0.36) to[bend right=14] node[below=2pt, pos=0.46, align=center, font=\footnotesize, text=OliveGreen!75!black] {\textbf{(List-Hit)} $\Longrightarrow$ $|\Delta(x, w_0) \cap \Delta(x, y)| > \tfrac{1}{4} r_*$\\[-1pt](\textbf{(Overlap)}: $\le K$ choices for $y$ per $(x, w_0)$)} (10.35, -0.36);
+
+  % Callout for (List-Size)
+  \node[BrickRed!90!black, align=center, font=\footnotesize] at (2.25, -0.98) {\textbf{(List-Size)}: $\le K$ origins $x$\\[-1pt]per oriented edge $(u_{s_0-1}, w_0)$};
+
+  % Vertex markers
+  \filldraw[MidnightBlue] (x) circle (2.4pt) node[below=3pt] {$x = u_0$};
+  \filldraw[gray!80!black] (u1) circle (2.0pt) node[above=2pt] {$u_1$};
+  \filldraw[BrickRed] (usprev) circle (2.3pt) node[below=3pt] {$u_{s_0-1}$};
+  \filldraw[BrickRed] (w0) circle (2.5pt) node[below=3pt] {$w_0 = u_{s_0}$};
+  \filldraw[MidnightBlue!80] (w1) circle (2.0pt);
+  \filldraw[MidnightBlue] (y) circle (2.4pt) node[above=3pt, align=center] {$y = w_\ell$\\[-2pt]{\scriptsize ($\dHam(x, y) = r_*$)}};
+\end{tikzpicture}
+\caption{How a $K$-bounded list system bounds close pairs in Theorem~\ref{thm:mod2-combinatorial}(a). Along a local path from $x$ to $y$, let $(u_{s_0-1}, w_0)$ be the last step whose list (plus $\{u_{s_0-1}\}$) contains $x$. By~\textbf{(List-Size)}, the $2|\widehat{E}|$ oriented edges generate at most $2 K |\widehat{E}|$ hit pairs $(x, w_0)$. Because the remaining suffix from $w_0$ to $y$ never hits $x$'s list, the contrapositive of~\textbf{(List-Hit)} forces $w_0$ to be aligned with $y$ (unless $w_0 = y$), and~\textbf{(Overlap)} leaves at most $K$ possibilities for $y$, giving $|E_{r_*}(\mathcal{X})| \le 2 K^2 |\widehat{E}|$.}
+\label{fig:list-charging}
+\end{figure}
 
 Part~(a) of the next theorem is the charging argument. Part~(b) is a statement about sequences of finite sets, which is the main tool for verifying Condition~\textbf{(List-Hit)} in Section~\ref{sec:csp-cloud}; there, $F_t = \Delta(x, w_t)$ is the set of coordinates in which the $t$-th vertex of a walk differs from $x$. Part~(b) considers sets $F_0, \dots, F_\ell$ of size at most $C_1 r_*$ whose first and last members share at most $\frac{1}{4} r_*$ elements. It finds a step $s$ at which $F_{s-1} \cap F_s$ partitions into $k \le k_{\max} = 8 C_1$ disjoint pieces $A_1, \dots, A_k$ and a remainder $I_k$ of size at most $\frac{1}{2} r_*$, together with sequence members $F_{t_1}, \dots, F_{t_k}$, such that each $F_{t_r}$ avoids $A_r$, covers the remaining pieces $I_r = A_{r+1} \sqcup \dots \sqcup A_k \sqcup I_k$, and contains at least $|A_r| - \frac{1}{4} r_*$ elements of $(F_{s-1} \cup F_s) \setminus (A_r \sqcup I_r)$. Crucially, $k_{\max}$ does not depend on the length $\ell$ of the sequence.
 
@@ -331,7 +476,7 @@ Apply Theorem~\ref{thm:main} at $p_0 = 2$ and stretch $2 C$ to obtain $n$-point 
 \label{sec:warmups}
 % ============================================================================
 
-Before proving Theorems~\ref{thm:mod1-projection}--\ref{thm:mod3-cloud}, we record three elementary constructions. They illustrate the power of Steiner vertices and of paths with more than two edges, and they explain two features of the codes constructed in Section~\ref{sec:csp-cloud}: the distance $r_*$ of the close pairs is only a small fraction $r_*/N = 2^{-L}$ of the length of the code (Proposition~\ref{prop:simplex}(b)), and the codes are far from being dense subsets of the hypercube (Proposition~\ref{prop:three-hop}). Throughout this section, a spanner $H = (P \sqcup S, E, w)$ of $(P, \dP)$ is called a \emph{$k$-hop} $C$-spanner if every pair of distinct points $x, y \in P$ is connected in $H$ by a simple path of at most $k$ edges and weight at most $C \cdot \dP(x, y)$. None of the results in this section are needed in Sections~\ref{sec:projection}--\ref{sec:csp-cloud}.
+Before proving Theorems~\ref{thm:mod1-projection}--\ref{thm:mod3-cloud}, we record three elementary constructions. They illustrate the power of Steiner vertices and of paths with more than two edges, and they explain two features of the codes constructed in Section~\ref{sec:csp-cloud}: the distance $r_*$ of the close pairs is only a small fraction $r_*/N = 2^{-L}$ of the length of the code (Proposition~\ref{prop:simplex}(b)), and the codes are far from being dense subsets of the hypercube (Proposition~\ref{prop:three-hop}). Throughout this section, recall from Definition~\ref{def:spanner} that a spanner $H = (P \sqcup S, E, w)$ of $(P, \dP)$ is a \emph{$k$-hop} $C$-spanner if every pair of distinct terminals $x, y \in P$ is connected in $H$ by a simple path of at most $k$ edges and weight at most $C \cdot \dP(x, y)$. None of the results in this section are needed in Sections~\ref{sec:projection}--\ref{sec:csp-cloud}.
 
 \subsection{Buckets and Equidistant Points}
 \label{subsec:bucketing-simplex}
@@ -610,7 +755,7 @@ Now suppose $\beta > \alpha$ and the claim holds for all intervals $[\alpha', \b
 \end{figure}
 
 \begin{proof}[Proof of Theorem~\ref{thm:mod2-combinatorial}(b)]
-For each $s \in \{1, \dots, \ell\}$, write $W_s := F_{s-1} \cup F_s$, and call a sequence $(t_1, \dots, t_k)$ of indices in $[0, \ell]$ ($k \ge 0$) an \emph{$s$-valid peeling} if, setting $I_0 := F_{s-1} \cap F_s$ and inductively $A_r := I_{r-1} \setminus F_{t_r}$ and $I_r := I_{r-1} \cap F_{t_r}$ for $1 \le r \le k$, every $1 \le r \le k$ satisfies
+At a fixed step $s \in \{1, \dots, \ell\}$, write $W_s := F_{s-1} \cup F_s$. We try to chip away $F_{s-1} \cap F_s$ one piece $A_r$ at a time using sets $F_{t_r}$ from the sequence, requiring each step to peel off at least $\frac{1}{8} r_*$ elements while picking up nearly as many elements of $W_s$ outside the unpeeled remainder. Formally, call a sequence $(t_1, \dots, t_k)$ of indices in $[0, \ell]$ ($k \ge 0$) an \emph{$s$-valid peeling} if, setting $I_0 := F_{s-1} \cap F_s$ and inductively $A_r := I_{r-1} \setminus F_{t_r}$ and $I_r := I_{r-1} \cap F_{t_r}$ for $1 \le r \le k$, every $1 \le r \le k$ satisfies
 \[
 |A_r| \;\ge\; \frac{1}{8}\,r_* \qquad \text{and} \qquad \bigl|(W_s \cap F_{t_r}) \setminus I_{r-1}\bigr| \;\ge\; |A_r| - \frac{1}{4}\,r_*.
 \]
@@ -652,36 +797,106 @@ This section proves Theorem~\ref{thm:mod3-cloud}. The code $\mathcal{X}$ is obta
 \subsection{Constraint Systems and the Definition of the Lists}
 \label{subsec:csp-lists}
 
-Let $N, q \ge 2$ be integers. We refer to the elements of the alphabet $[q]$ as \emph{colors}. A \emph{constraint system} $R = (R_{u, v})_{1 \le u < v \le N}$ over $[q]$ assigns a relation $R_{u, v} \subseteq [q] \times [q]$ to each pair $1 \le u < v \le N$; for $1 \le v < u \le N$, we write $R_{u, v} := \{(c_2, c_1) : (c_1, c_2) \in R_{v, u}\}$. Thus for every ordered pair of distinct coordinates $(u, v) \in [N]^2$ and colors $(c_1, c_2) \in [q]^2$, the membership $(c_1, c_2) \in R_{u, v}$ depends only on the canonical tuple
-\[
-\mathrm{entry}(u, c_1;\, v, c_2) \;:=\;
-\begin{cases}
-(u, v, c_1, c_2) & \text{if } u < v, \\
-(v, u, c_2, c_1) & \text{if } u > v.
-\end{cases}
-\]
-Let $\Omega(R) := \bigl\{x \in [q]^N : \forall 1 \le u < v \le N,\; (x_u, x_v) \in R_{u, v}\bigr\}$ be the set of satisfying assignments of $R$. For any three strings $x, y, z \in [q]^N$, define the three-way disagreement set
-\[
-D_3(x, y, z) \;:=\; \bigl\{v \in [N] : |\{x_v, y_v, z_v\}| = 3\bigr\} \;\subseteq\; \Delta(x, y) \cap \Delta(x, z).
-\]
-Given $x, a, b \in [q]^N$, set $W(x, a, b) := \Delta(x, a) \cup \Delta(x, b)$, and for each coordinate $v \in W(x, a, b)$, define the \emph{alternative color}
-\[
-c_v(x, a, b) \;:=\;
-\begin{cases}
-a_v & \text{if } a_v \ne x_v, \\
-b_v & \text{if } a_v = x_v.
-\end{cases}
-\]
-Because $v \in \Delta(x, a) \cup \Delta(x, b)$, if $a_v = x_v$ then $b_v \ne x_v$; hence $c_v(x, a, b) \in \{a_v, b_v\} \setminus \{x_v\}$ and $c_v(x, a, b) \ne x_v$ for every $v \in W(x, a, b)$. In addition, for any string $z \in [q]^N$ and any coordinate $v \in \bigl(W(x, a, b) \cap \Delta(x, z)\bigr) \setminus \bigl(D_3(x, a, z) \cup D_3(x, b, z)\bigr)$, we have $z_v = c_v(x, a, b)$: indeed, $z_v \ne x_v$, so if $v \in \Delta(x, a)$ then $a_v \ne x_v$ and $|\{x_v, a_v, z_v\}| \le 2$ force $z_v = a_v = c_v(x, a, b)$, whereas if $v \in \Delta(x, b) \setminus \Delta(x, a)$ then $a_v = x_v$, $b_v \ne x_v$, and $|\{x_v, b_v, z_v\}| \le 2$ force $z_v = b_v = c_v(x, a, b)$.
+\begin{definition*}[Constraint Systems, Three-Way Disagreements, and Alternative Colors]
+We build codes from strings in $[q]^N$ (whose alphabet elements we call \emph{colors}) that satisfy a pairwise constraint on every pair of coordinates. To compare a candidate origin $x$ with an edge $(a, b)$ and another codeword $z$, we also record where three strings take three distinct colors and pick out, on every coordinate where $a$ or $b$ differs from $x$, a single color from $\{a_v, b_v\} \setminus \{x_v\}$:
+\begin{itemize}[leftmargin=2em,nosep,topsep=4pt,itemsep=3pt]
+  \item \textbf{Constraint systems and satisfying assignments.} Fix integers $N, q \ge 2$. A \emph{constraint system} $R = (R_{u, v})_{1 \le u < v \le N}$ over $[q]$ assigns a relation $R_{u, v} \subseteq [q] \times [q]$ of allowed color pairs to each coordinate pair $1 \le u < v \le N$; for $1 \le v < u \le N$, we write $R_{u, v} := \{(c_2, c_1) : (c_1, c_2) \in R_{v, u}\}$. Thus for every ordered pair of distinct coordinates $(u, v) \in [N]^2$ and colors $(c_1, c_2) \in [q]^2$, membership $(c_1, c_2) \in R_{u, v}$ depends only on the \emph{canonical entry}
+  \[
+  \mathrm{entry}(u, c_1;\, v, c_2) \;:=\;
+  \begin{cases}
+  (u, v, c_1, c_2) & \text{if } u < v, \\
+  (v, u, c_2, c_1) & \text{if } u > v.
+  \end{cases}
+  \]
+  The set of \emph{satisfying assignments} of $R$ is $\Omega(R) := \bigl\{x \in [q]^N : \forall 1 \le u < v \le N,\; (x_u, x_v) \in R_{u, v}\bigr\}$.
+  \item \textbf{Three-way disagreement set.} For three strings $x, y, z \in [q]^N$, their \emph{three-way disagreement set} is the set of coordinates where all three colors are pairwise distinct:
+  \[
+  D_3(x, y, z) \;:=\; \bigl\{v \in [N] : |\{x_v, y_v, z_v\}| = 3\bigr\} \;\subseteq\; \Delta(x, y) \cap \Delta(x, z).
+  \]
+  \item \textbf{Disagreement window and alternative color.} Given $x, a, b \in [q]^N$, let $W(x, a, b) := \Delta(x, a) \cup \Delta(x, b)$ be the set of coordinates where at least one of $a$ or $b$ differs from $x$. For each $v \in W(x, a, b)$, define the \emph{alternative color} (preferring $a_v$ when $a_v \ne x_v$) by
+  \[
+  c_v(x, a, b) \;:=\;
+  \begin{cases}
+  a_v & \text{if } a_v \ne x_v, \\
+  b_v & \text{if } a_v = x_v.
+  \end{cases}
+  \]
+\end{itemize}
+\end{definition*}
+
+Because $v \in \Delta(x, a) \cup \Delta(x, b)$, if $a_v = x_v$ then $b_v \ne x_v$; hence $c_v(x, a, b) \in \{a_v, b_v\} \setminus \{x_v\}$ and $c_v(x, a, b) \ne x_v$ for every $v \in W(x, a, b)$. In addition, if a fourth string $z \in [q]^N$ differs from $x$ at $v \in \bigl(W(x, a, b) \cap \Delta(x, z)\bigr) \setminus \bigl(D_3(x, a, z) \cup D_3(x, b, z)\bigr)$ without creating a three-way disagreement, then $z_v$ must equal $c_v(x, a, b)$: indeed, $z_v \ne x_v$, so if $v \in \Delta(x, a)$ then $a_v \ne x_v$ and $|\{x_v, a_v, z_v\}| \le 2$ force $z_v = a_v = c_v(x, a, b)$, whereas if $v \in \Delta(x, b) \setminus \Delta(x, a)$ then $a_v = x_v$, $b_v \ne x_v$, and $|\{x_v, b_v, z_v\}| \le 2$ force $z_v = b_v = c_v(x, a, b)$.
 
 \begin{definition}[The Lists $\mathcal{L}_R(a, b)$]
 \label{def:witness-list}
-Let $C_1 \ge 3$ and $r_* \ge 1$ be integers, and recall $k_{\max} = 8 C_1$. For $(a, b) \in \Omega(R)^2$ with $0 < \dHam(a, b) \le C_1 r_*$, define $\mathcal{L}_R(a, b)$ to be the set of all $x \in \Omega(R) \setminus \{a, b\}$ satisfying $\dHam(x, a) \le C_1 r_*$ and $\dHam(x, b) \le C_1 r_*$ for which there exist an integer $0 \le k \le k_{\max}$, pairwise disjoint subsets $A_1, \dots, A_k, I_k \subseteq \Delta(x, a) \cap \Delta(x, b)$ with $\Delta(x, a) \cap \Delta(x, b) = A_1 \sqcup \dots \sqcup A_k \sqcup I_k$ and $|I_k| \le \frac{1}{2} r_*$, and (setting $I_{r-1} := A_r \sqcup \dots \sqcup A_k \sqcup I_k$ for $1 \le r \le k + 1$) subsets $B_r^{\mathrm{fut}} \subseteq I_r$ and $B_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus I_{r-1}$ ($1 \le r \le k$) such that for every $1 \le r \le k$:
-\begin{enumerate}[label=(\arabic*),nosep]
-  \item \emph{(Hybrid constraints)} $(x_u, c_v(x, a, b)) \in R_{u, v}$ for all $u \in A_r$ and $v \in B_r^{\mathrm{fut}} \cup B_r^{\mathrm{out}}$ (note $u \ne v$ since $A_r$, $I_r$, and $W(x, a, b) \setminus I_{r-1}$ are pairwise disjoint); and
-  \item \emph{(Biclique sizes)} $|I_r \setminus B_r^{\mathrm{fut}}| \le \frac{1}{80} r_*$ and $|B_r^{\mathrm{out}}| \ge |A_r| - \frac{11}{40} r_*$.
+Given a short step $(a, b)$ between two satisfying assignments, the list $\mathcal{L}_R(a, b)$ collects all nearby satisfying assignments $x \notin \{a, b\}$ whose shared disagreement set $\Delta(x, a) \cap \Delta(x, b)$ can be peeled away in at most $k_{\max} = 8 C_1$ disjoint pieces $A_1, \dots, A_k$ down to a remainder $I_k$ of size at most $\frac{1}{2} r_*$, such that every piece $A_r$ sends a dense biclique of \emph{hybrid constraints}---pairing $x$'s colors on $A_r$ with the alternative colors $c_v(x, a, b) \in \{a_v, b_v\} \setminus \{x_v\}$---both into nearly all of the unpeeled remainder $I_r$ and into nearly $|A_r| - \frac{1}{4} r_*$ coordinates of $W(x, a, b)$ outside $A_r \cup I_r$ (Figure~\ref{fig:hybrid-biclique}).
+
+Formally, let $C_1 \ge 3$ and $r_* \ge 1$ be integers, and recall $k_{\max} = 8 C_1$. For $(a, b) \in \Omega(R)^2$ with $0 < \dHam(a, b) \le C_1 r_*$, define $\mathcal{L}_R(a, b)$ to be the set of all $x \in \Omega(R) \setminus \{a, b\}$ satisfying $\dHam(x, a) \le C_1 r_*$ and $\dHam(x, b) \le C_1 r_*$ for which there exist:
+\begin{itemize}[leftmargin=2em,nosep,topsep=3pt,itemsep=2pt]
+  \item an integer $0 \le k \le k_{\max}$ and pairwise disjoint subsets $A_1, \dots, A_k, I_k \subseteq \Delta(x, a) \cap \Delta(x, b)$ with $\Delta(x, a) \cap \Delta(x, b) = A_1 \sqcup \dots \sqcup A_k \sqcup I_k$ and $|I_k| \le \frac{1}{2} r_*$ (write $I_{r-1} := A_r \sqcup \dots \sqcup A_k \sqcup I_k$ for $1 \le r \le k + 1$); and
+  \item for each $1 \le r \le k$, subsets $B_r^{\mathrm{fut}} \subseteq I_r$ and $B_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus I_{r-1}$,
+\end{itemize}
+such that every $1 \le r \le k$ satisfies:
+\begin{enumerate}[label=(\arabic*),leftmargin=2em,nosep,topsep=3pt,itemsep=2pt]
+  \item \emph{(Hybrid constraints.)} $(x_u, c_v(x, a, b)) \in R_{u, v}$ for all $u \in A_r$ and $v \in B_r^{\mathrm{fut}} \cup B_r^{\mathrm{out}}$ (note $u \ne v$ since $A_r$, $I_r$, and $W(x, a, b) \setminus I_{r-1}$ are pairwise disjoint); and
+  \item \emph{(Biclique sizes.)} $|I_r \setminus B_r^{\mathrm{fut}}| \le \frac{1}{80} r_*$ and $|B_r^{\mathrm{out}}| \ge |A_r| - \frac{11}{40} r_*$.
 \end{enumerate}
 \end{definition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[every node/.style={font=\small}, >={Stealth[length=5pt]}]
+  % Main coordinate strip W(x, a, b) = \Delta(x, a) \cup \Delta(x, b) from x=0 to x=13.4, y=0 to y=0.95
+  % Sub-highlights first
+  % B_r^{out} part 1 inside A_1 \sqcup ... \sqcup A_{r-1}
+  \fill[OliveGreen!18] (0.28, 0.1) rectangle (2.42, 0.85);
+  \draw[OliveGreen!75!black, thick, rounded corners=1.5pt] (0.28, 0.1) rectangle (2.42, 0.85);
+  % A_r
+  \fill[MidnightBlue!15] (2.6, 0) rectangle (5.1, 0.95);
+  % B_r^{fut} inside I_r
+  \fill[BrickRed!15] (5.25, 0.1) rectangle (8.45, 0.85);
+  \draw[BrickRed!80!black, thick, rounded corners=1.5pt] (5.25, 0.1) rectangle (8.45, 0.85);
+  % B_r^{out} part 2 inside \Delta(x, a) \triangle \Delta(x, b)
+  \fill[OliveGreen!18] (9.75, 0.1) rectangle (12.45, 0.85);
+  \draw[OliveGreen!75!black, thick, rounded corners=1.5pt] (9.75, 0.1) rectangle (12.45, 0.85);
+
+  % Outer frame and dividers
+  \draw[thick, black!80] (0, 0) rectangle (13.4, 0.95);
+  \draw[very thick, MidnightBlue] (2.6, 0) rectangle (5.1, 0.95);
+  \draw[thick, black!80] (9.45, 0) -- (9.45, 0.95);
+
+  % Block labels inside strip
+  \node[OliveGreen!65!black] at (1.35, 0.58) {\textbf{$B_r^{\mathrm{out}}$} {\footnotesize (part)}};
+  \node[OliveGreen!65!black, font=\scriptsize] at (1.35, 0.23) {color $c_v(x, a, b)$};
+  \node[MidnightBlue!95!black] at (3.85, 0.58) {\textbf{$A_r$}};
+  \node[MidnightBlue!90!black, font=\scriptsize] at (3.85, 0.23) {color $x_u$};
+  \node[BrickRed!85!black] at (6.85, 0.58) {\textbf{$B_r^{\mathrm{fut}} \subseteq I_r$}};
+  \node[BrickRed!85!black, font=\scriptsize] at (6.85, 0.23) {color $c_v(x, a, b)$};
+  \node[black!75, font=\scriptsize] at (8.95, 0.48) {$\le \frac{r_*}{80}$};
+  \node[OliveGreen!65!black] at (11.1, 0.58) {\textbf{$B_r^{\mathrm{out}}$} {\footnotesize (part)}};
+  \node[OliveGreen!65!black, font=\scriptsize] at (11.1, 0.23) {color $c_v(x, a, b)$};
+
+  % Top braces
+  \draw[decorate, decoration={brace, amplitude=5pt}, thick, black!75] (0, 1.05) -- (2.55, 1.05)
+    node[midway, above=5pt, font=\footnotesize] {$A_1 \sqcup \dots \sqcup A_{r-1}$};
+  \draw[decorate, decoration={brace, amplitude=5pt}, thick, black!75] (5.15, 1.05) -- (9.42, 1.05)
+    node[midway, above=5pt, font=\footnotesize] {$I_r = A_{r+1} \sqcup \dots \sqcup A_k \sqcup I_k$};
+  \draw[decorate, decoration={brace, amplitude=5pt}, thick, black!75] (9.48, 1.05) -- (13.4, 1.05)
+    node[midway, above=5pt, font=\footnotesize] {$\Delta(x, a) \triangle \Delta(x, b)$};
+  \draw[decorate, decoration={brace, amplitude=6pt}, thick, MidnightBlue!80!black] (0, 1.78) -- (9.45, 1.78)
+    node[midway, above=6pt, font=\footnotesize, text=MidnightBlue!85!black] {shared disagreements $\Delta(x, a) \cap \Delta(x, b)$ ($|I_k| \le \tfrac{1}{2} r_*$)};
+
+  % Hybrid-constraint biclique arrows below the strip
+  \draw[->, very thick, BrickRed!85!black] (4.15, -0.04) to[bend right=25] (6.9, -0.04);
+  \draw[->, very thick, OliveGreen!75!black] (3.55, -0.04) to[bend left=26] (1.5, -0.04);
+  \draw[->, very thick, OliveGreen!75!black] (4.45, -0.04) to[bend right=20] (11.0, -0.04);
+
+  \node[align=center, font=\footnotesize] at (6.7, -1.12)
+    {Step-$r$ hybrid-constraint biclique in $R$: $(x_u,\, c_v(x, a, b)) \in R_{u, v}$ for all $u \in A_r$ and $v \in B_r^{\mathrm{fut}} \cup B_r^{\mathrm{out}}$\\[-1pt]
+    {\scriptsize (witnessed in Lemma~\ref{lem:list-hit} by a path vertex $w_{t_r} \in \Omega(R)$ agreeing with $x$ on $A_r$ and with $c_v(x, a, b)$ on $B_r^{\mathrm{fut}} \cup B_r^{\mathrm{out}}$)}};
+\end{tikzpicture}
+\caption{Step $r \in \{1, \dots, k\}$ of the peeling witness in Definition~\ref{def:witness-list} inside the disagreement window $W(x, a, b) = \Delta(x, a) \cup \Delta(x, b)$. The current piece $A_r$ sends hybrid constraints $(x_u, c_v(x, a, b)) \in R_{u, v}$ to $B_r^{\mathrm{fut}} \subseteq I_r$ (missing at most $\frac{1}{80} r_*$ coordinates of $I_r$) and to $B_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus I_{r-1}$ (of size at least $|A_r| - \frac{11}{40} r_*$).}
+\label{fig:hybrid-biclique}
+\end{figure}
 
 \begin{remark}[Why the Peeling Uses Few Disjoint Steps]
 \label{rem:biclique-entropy}
@@ -718,7 +933,7 @@ K &\;:=\; 20 C_1^2, & \lambda_0 &\;:=\; 100 C_1\bigl(2\lceil \log_2 C_1 \rceil +
 L &\;:=\; 1600 C_1^2 \lambda_0 + 20, & E_q &\;:=\; 2 \beta_0 2^L, & q &\;:=\; 2^{E_q} + 1, & R_0 &\;:=\; 1000 C_1 + 1, \\
 \mu_0 &\;:=\; \beta_0 2^{2 L}, & c(C_1) &\;:=\; 2^{-(2 L + 5)}.
 \end{align*}
-Since $C_1 \ge 3$, we have $\lceil \log_2 C_1 \rceil \ge 2$, $K \ge 180$, $\lambda_0 \ge 1000 C_1 \ge 3000$ with $\lambda_0 = \Theta(C_1 \log C_1)$, $\eta_0 L = 20 C_1^2 \lambda_0 + \frac{1}{4} > 20 C_1^2 \lambda_0$, $L = \Theta(C_1^3 \log C_1)$ with $L > 4 \times 10^7$, $q - 1 = 2^{E_q} > 2^{10^8}$, and $R_0 = 1000 C_1 + 1 > \max(3000, 160 C_1)$; moreover, since $21 e < 64 = 2^6$, we have $21 e C_1^2 < 2^{2\lceil \log_2 C_1 \rceil + 6}$ and hence $C_1 \log_2(21 e C_1^2) < 0.01 \lambda_0$. By Stirling's inequality~\cite{robbins1955remark}, $(s/e)^s < s! \le e s (s/e)^s$ for every integer $s \ge 1$. Using $\sup_{t > 0} (1/t)^t = e^{1/e} < 2^{0.54}$ and $\sup_{t > 0} (e/t)^t = e < 2^{1.45}$ (with $0^0 := 1$), every integer $s \ge 0$ satisfies $(r_*/s)^s \le 2^{0.54 r_*}$ and $(e r_*/s)^s \le 2^{1.45 r_*}$, whence $\binom{U}{s} \le A^s 2^{1.45 r_*}$ for all integers $A \ge 1$ and $0 \le U \le A r_*$ (vanishing if $s > U$, and bounded by $\frac{(A r_*)^s}{s!} \le A^s (e r_*/s)^s$ for $1 \le s \le U$). Also, since $\frac{d}{dx}\bigl[x\ln(e M_{\mathrm{pool}}/x)\bigr] = \ln(M_{\mathrm{pool}}/x) \ge 0$ on $(0, M_{\mathrm{pool}}]$, any integers $1 \le b \le M_{\mathrm{pool}}$ and $0 \le U \le M_{\mathrm{pool}}$ satisfy $\sum_{s=0}^b \binom{U}{s} \le \sum_{s=0}^b \binom{M_{\mathrm{pool}}}{s} \le (b + 1)(e M_{\mathrm{pool}}/b)^b$.
+Here $K$ is the list-size threshold, $\beta_0 > \gamma_0$ control the quadratic constraint-sharing surplus versus the linear per-coordinate penalty (in units of $\lambda_0$), $2^L = N/r_*$ is the ratio of block length to close-pair distance, $q = 2^{E_q} + 1$ is the alphabet size, and $c(C_1)$ is the resulting spanner-size exponent. Since $C_1 \ge 3$, we have $\lceil \log_2 C_1 \rceil \ge 2$, $K \ge 180$, $\lambda_0 \ge 1000 C_1 \ge 3000$ with $\lambda_0 = \Theta(C_1 \log C_1)$, $\eta_0 L = 20 C_1^2 \lambda_0 + \frac{1}{4} > 20 C_1^2 \lambda_0$, $L = \Theta(C_1^3 \log C_1)$ with $L > 4 \times 10^7$, $q - 1 = 2^{E_q} > 2^{10^8}$, and $R_0 = 1000 C_1 + 1 > \max(3000, 160 C_1)$; moreover, since $21 e < 64 = 2^6$, we have $21 e C_1^2 < 2^{2\lceil \log_2 C_1 \rceil + 6}$ and hence $C_1 \log_2(21 e C_1^2) < 0.01 \lambda_0$. By Stirling's inequality~\cite{robbins1955remark}, $(s/e)^s < s! \le e s (s/e)^s$ for every integer $s \ge 1$. Using $\sup_{t > 0} (1/t)^t = e^{1/e} < 2^{0.54}$ and $\sup_{t > 0} (e/t)^t = e < 2^{1.45}$ (with $0^0 := 1$), every integer $s \ge 0$ satisfies $(r_*/s)^s \le 2^{0.54 r_*}$ and $(e r_*/s)^s \le 2^{1.45 r_*}$, whence $\binom{U}{s} \le A^s 2^{1.45 r_*}$ for all integers $A \ge 1$ and $0 \le U \le A r_*$ (vanishing if $s > U$, and bounded by $\frac{(A r_*)^s}{s!} \le A^s (e r_*/s)^s$ for $1 \le s \le U$). Also, since $\frac{d}{dx}\bigl[x\ln(e M_{\mathrm{pool}}/x)\bigr] = \ln(e M_{\mathrm{pool}}/x) - 1 = \ln(M_{\mathrm{pool}}/x) \ge 0$ on $(0, M_{\mathrm{pool}}]$, any integers $1 \le b \le M_{\mathrm{pool}}$ and $0 \le U \le M_{\mathrm{pool}}$ satisfy $\sum_{s=0}^b \binom{U}{s} \le \sum_{s=0}^b \binom{M_{\mathrm{pool}}}{s} \le (b + 1)(e M_{\mathrm{pool}}/b)^b$.
 
 Now fix any integer $r_* \ge R_0$, and set
 \[
@@ -735,7 +950,16 @@ Also, since $E_q = 2 \beta_0 2^L$, $r_* \ge 3001$, and $2^L - 1 \ge L^2 > 10^4 C
 \beta_0 \;<\; \frac{\sigma_{\mathrm{edge}} r_*}{2} \;=\; \frac{2\beta_0 2^L + L + \gamma_0 + 2}{2(2^L - r_*^{-1})} \;\le\; \beta_0 + \frac{2\beta_0 + L + \gamma_0 + 2}{2(2^L - 1)} \;<\; \left(1 + \frac{1}{10^4 C_1^2}\right)\beta_0 \;\le\; 1.0001\,\beta_0.
 \end{equation}
 
-Sample $R = (R_{u, v})_{1 \le u < v \le N}$ by including each ordered color pair $(c_1, c_2) \in [q]^2$ in $R_{u, v}$ independently with probability $p_{\mathrm{edge}}$ (the complete-graph case of random binary CSP Model~A~\cite{achlioptas2001random,molloy2003models,frieze2006satisfiability}, taken here at constant alphabet $q = O_{C_1}(1)$ and vanishing tightness $1 - p_{\mathrm{edge}} = \Theta_{C_1}(1/N)$ well inside the satisfiable regime), and write $\Omega := \Omega(R)$. Independently of $R$, sample independent coins $\xi_x \sim \Ber(p_{\mathrm{keep}})$ ($x \in [q]^N$) with $p_{\mathrm{keep}} \in (0, 1)$ defined below, and set $P_{\mathrm{raw}} := \{x \in \Omega : \xi_x = 1\}$ and $E_{\mathrm{raw}} := \{(x, y) \in P_{\mathrm{raw}}^2 : \dHam(x, y) = r_*\}$.
+\begin{definition*}[Random $2$-CSP and Sampled Code]
+We generate a random subset of $[q]^N$ in two stages: first we draw a permissive random pairwise constraint system, and then we independently subsample its satisfying assignments to eliminate too-close pairs while preserving many pairs at distance $r_*$:
+\begin{itemize}[leftmargin=2em,nosep,topsep=4pt,itemsep=3pt]
+  \item \textbf{Random constraint system $R$ and solution set $\Omega$.} Sample $R = (R_{u, v})_{1 \le u < v \le N}$ by including each ordered color pair $(c_1, c_2) \in [q]^2$ in $R_{u, v}$ independently with probability $p_{\mathrm{edge}} = 2^{-\sigma_{\mathrm{edge}}}$ (the complete-graph case of random binary CSP Model~A~\cite{achlioptas2001random,molloy2003models,frieze2006satisfiability}, taken here at constant alphabet $q = O_{C_1}(1)$ and vanishing tightness $1 - p_{\mathrm{edge}} = \Theta_{C_1}(1/N)$ well inside the satisfiable regime), and write $\Omega := \Omega(R)$ for its set of satisfying assignments.
+  \item \textbf{Subsampled code $P_{\mathrm{raw}}$ and close pairs $E_{\mathrm{raw}}$.} Independently of $R$, draw independent Bernoulli coins $\xi_x \sim \Ber(p_{\mathrm{keep}})$ for all $x \in [q]^N$ (with $p_{\mathrm{keep}} \in (0, 1)$ calibrated below), and define the raw sampled code and its close pairs by
+  \[
+  P_{\mathrm{raw}} \;:=\; \{x \in \Omega : \xi_x = 1\} \quad \text{and} \quad E_{\mathrm{raw}} \;:=\; E_{r_*}(P_{\mathrm{raw}}) \;=\; \{(x, y) \in P_{\mathrm{raw}}^2 : \dHam(x, y) = r_*\}.
+  \]
+\end{itemize}
+\end{definition*}
 
 \paragraph{First-moment calibration.}
 Each $x \in [q]^N$ satisfies $\Pr[x \in \Omega] = p_{\mathrm{edge}}^{\binom{N}{2}} = 2^{-\sigma_{\mathrm{edge}} N(N - 1)/2}$, so $\mathbb{E}[|\Omega|] = q^N 2^{-\sigma_{\mathrm{edge}} N(N - 1)/2}$. Conditioned on $x \in \Omega$, any $y \in [q]^N$ at distance $\dHam(x, y) = s \in \{1, \dots, N\}$ queries $s(N - s) + \binom{s}{2} = s(N - 1) - \binom{s}{2}$ canonical entries of $R$ disjoint from those of $x$ (one on every pair $\{u, v\}$ meeting $\Delta(x, y)$, since $y_u \ne x_u$ for $u \in \Delta(x, y)$). Thus the conditional expected number of $y \in \Omega$ with $\dHam(x, y) = s$ is
@@ -777,7 +1001,7 @@ For $0 \le t \le K$, let $N_t$ be the number of ordered $t$-tuples $(x^{(1)}, \d
 
 The base case $t = 0$ is trivial. For $1 \le t \le K$, fix any $(t - 1)$-tuple $(x^{(1)}, \dots, x^{(t-1)})$ of pairwise distinct strings in $[q]^N \setminus \{a, b\}$ with $\dHam(x^{(s)}, a), \dHam(x^{(s)}, b) \le C_1 r_*$ ($1 \le s \le t - 1$), and let $\mathcal{R}_{t-1} \subseteq [N] \times [q]$ be the set of all coordinate-color pairs $(v, z_v)$ appearing in $z \in S_{t-1} := \{a, b, x^{(1)}, \dots, x^{(t-1)}\}$. Let $\mathcal{F}_{t-1}$ be the $\sigma$-algebra generated by $(\xi_z)_{z \in S_{t-1}}$ and all canonical entries $\mathrm{entry}(u, c_1; v, c_2)$ of $R$ with both $(u, c_1), (v, c_2) \in \mathcal{R}_{t-1}$. The event $\mathcal{E}_{t-1} := \mathcal{E}_{a, b} \cap \{x^{(1)}, \dots, x^{(t-1)} \in \mathcal{L}_R(a, b) \cap P_{\mathrm{raw}}\}$ is $\mathcal{F}_{t-1}$-measurable, since for each $z \in \{x^{(1)}, \dots, x^{(t-1)}\}$ both $z \in \Omega(R)$ and item~(1) of Definition~\ref{def:witness-list} inspect only canonical entries whose endpoints lie in $\{(u, z_u), (v, a_v), (v, b_v) : u, v \in [N]\} \subseteq \mathcal{R}_{t-1}$. Writing $\mathrm{graph}(a) := \{(v, a_v) : v \in [N]\}$, we also have $|\mathcal{R}_{t-1} \setminus \mathrm{graph}(a)| \le \dHam(a, b) + \sum_{s=1}^{t-1} \dHam(a, x^{(s)}) \le t C_1 r_* \le K C_1 r_*$.
 
-Consider any candidate $x \in [q]^N \setminus S_{t-1}$ with $\dHam(x, a), \dHam(x, b) \le C_1 r_*$. Partition $\Delta(x, a)$ into $V_{\mathrm{old}} := \{v \in \Delta(x, a) : (v, x_v) \in \mathcal{R}_{t-1}\}$ and $M := \{v \in \Delta(x, a) : (v, x_v) \notin \mathcal{R}_{t-1}\}$, and put $m := |M| \in \{0, \dots, C_1 r_*\}$. Every $u \in M$ satisfies $(u, b_u) \in \mathcal{R}_{t-1}$ and $(u, x_u) \notin \mathcal{R}_{t-1}$, so $x_u \ne b_u$ as well as $x_u \ne a_u$; hence $M \subseteq \Delta(x, a) \cap \Delta(x, b)$. Define a \emph{projected witness} for $x$ to be a tuple $\widehat{\mathcal{W}} = \bigl(k, (M_1, \dots, M_k, M_{\mathrm{tail}}), (\widehat{B}_r^{\mathrm{fut}}, \widehat{B}_r^{\mathrm{out}})_{r=1}^k\bigr)$ where $0 \le k \le k_{\max}$, $(M_1, \dots, M_k, M_{\mathrm{tail}})$ is an ordered partition of $M$ into pairwise disjoint sets with $|M_{\mathrm{tail}}| \le \frac{1}{2} r_*$, and (setting $a_r := |M_r|$, $\widetilde{I}_r := M_{r+1} \sqcup \dots \sqcup M_k \sqcup M_{\mathrm{tail}}$, and $\hat{s}_r := \max\bigl(0, a_r - \lfloor \frac{11}{40} r_* \rfloor\bigr)$) each $1 \le r \le k$ satisfies $\widehat{B}_r^{\mathrm{fut}} \subseteq \widetilde{I}_r$ with $|\widetilde{I}_r \setminus \widehat{B}_r^{\mathrm{fut}}| \le \frac{1}{80} r_*$, $\widehat{B}_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus (M_r \sqcup \widetilde{I}_r)$ with $|\widehat{B}_r^{\mathrm{out}}| = \hat{s}_r$, and $(x_u, c_v(x, a, b)) \in R_{u, v}$ for all $u \in M_r$ and $v \in \widehat{B}_r^{\mathrm{fut}} \cup \widehat{B}_r^{\mathrm{out}}$. Any $x \in \mathcal{L}_R(a, b)$ admits a projected witness: given a witness $(k, A_1, \dots, A_k, I_k, (B_r^{\mathrm{fut}}, B_r^{\mathrm{out}})_{r=1}^k)$ from Definition~\ref{def:witness-list}, set $M_r := M \cap A_r$, $M_{\mathrm{tail}} := M \cap I_k$ ($|M_{\mathrm{tail}}| \le |I_k| \le \frac{1}{2} r_*$), and $\widehat{B}_r^{\mathrm{fut}} := M \cap B_r^{\mathrm{fut}} \subseteq M \cap I_r = \widetilde{I}_r$ ($|\widetilde{I}_r \setminus \widehat{B}_r^{\mathrm{fut}}| \le |I_r \setminus B_r^{\mathrm{fut}}| \le \frac{1}{80} r_*$); since $|B_r^{\mathrm{out}}| \ge |A_r| - \frac{11}{40} r_* \ge a_r - \frac{11}{40} r_*$ is an integer, $|B_r^{\mathrm{out}}| \ge \hat{s}_r$, so we may pick an arbitrary subset $\widehat{B}_r^{\mathrm{out}} \subseteq B_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus I_{r-1} \subseteq W(x, a, b) \setminus (M_r \sqcup \widetilde{I}_r)$ of size $\hat{s}_r$.
+Consider any candidate $x \in [q]^N \setminus S_{t-1}$ with $\dHam(x, a), \dHam(x, b) \le C_1 r_*$. Partition $\Delta(x, a)$ into $V_{\mathrm{old}} := \{v \in \Delta(x, a) : (v, x_v) \in \mathcal{R}_{t-1}\}$ and $M := \{v \in \Delta(x, a) : (v, x_v) \notin \mathcal{R}_{t-1}\}$, and put $m := |M| \in \{0, \dots, C_1 r_*\}$. Every $u \in M$ satisfies $(u, b_u) \in \mathcal{R}_{t-1}$ and $(u, x_u) \notin \mathcal{R}_{t-1}$, so $x_u \ne b_u$ as well as $x_u \ne a_u$; hence $M \subseteq \Delta(x, a) \cap \Delta(x, b)$. Because constraints among coordinates in $V_{\mathrm{old}}$ may already have been exposed in $\mathcal{F}_{t-1}$, we extract fresh randomness by restricting a peeling witness of Definition~\ref{def:witness-list} to the unexposed coordinates $M$ on the left and trimming each outside set to an exact deterministic size $\hat{s}_r$. Formally, define a \emph{projected witness} for $x$ to be a tuple $\widehat{\mathcal{W}} = \bigl(k, (M_1, \dots, M_k, M_{\mathrm{tail}}), (\widehat{B}_r^{\mathrm{fut}}, \widehat{B}_r^{\mathrm{out}})_{r=1}^k\bigr)$ where $0 \le k \le k_{\max}$, $(M_1, \dots, M_k, M_{\mathrm{tail}})$ is an ordered partition of $M$ into pairwise disjoint sets with $|M_{\mathrm{tail}}| \le \frac{1}{2} r_*$, and (setting $a_r := |M_r|$, $\widetilde{I}_r := M_{r+1} \sqcup \dots \sqcup M_k \sqcup M_{\mathrm{tail}}$, and $\hat{s}_r := \max\bigl(0, a_r - \lfloor \frac{11}{40} r_* \rfloor\bigr)$) each $1 \le r \le k$ satisfies $\widehat{B}_r^{\mathrm{fut}} \subseteq \widetilde{I}_r$ with $|\widetilde{I}_r \setminus \widehat{B}_r^{\mathrm{fut}}| \le \frac{1}{80} r_*$, $\widehat{B}_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus (M_r \sqcup \widetilde{I}_r)$ with $|\widehat{B}_r^{\mathrm{out}}| = \hat{s}_r$, and $(x_u, c_v(x, a, b)) \in R_{u, v}$ for all $u \in M_r$ and $v \in \widehat{B}_r^{\mathrm{fut}} \cup \widehat{B}_r^{\mathrm{out}}$. Any $x \in \mathcal{L}_R(a, b)$ admits a projected witness: given a witness $(k, A_1, \dots, A_k, I_k, (B_r^{\mathrm{fut}}, B_r^{\mathrm{out}})_{r=1}^k)$ from Definition~\ref{def:witness-list}, set $M_r := M \cap A_r$, $M_{\mathrm{tail}} := M \cap I_k$ ($|M_{\mathrm{tail}}| \le |I_k| \le \frac{1}{2} r_*$), and $\widehat{B}_r^{\mathrm{fut}} := M \cap B_r^{\mathrm{fut}} \subseteq M \cap I_r = \widetilde{I}_r$ ($|\widetilde{I}_r \setminus \widehat{B}_r^{\mathrm{fut}}| \le |I_r \setminus B_r^{\mathrm{fut}}| \le \frac{1}{80} r_*$); since $|B_r^{\mathrm{out}}| \ge |A_r| - \frac{11}{40} r_* \ge a_r - \frac{11}{40} r_*$ is an integer, $|B_r^{\mathrm{out}}| \ge \hat{s}_r$, so we may pick an arbitrary subset $\widehat{B}_r^{\mathrm{out}} \subseteq B_r^{\mathrm{out}} \subseteq W(x, a, b) \setminus I_{r-1} \subseteq W(x, a, b) \setminus (M_r \sqcup \widetilde{I}_r)$ of size $\hat{s}_r$.
 
 For fixed $m \in \{0, \dots, C_1 r_*\}$, count the choices of $(x, \widehat{\mathcal{W}})$:
 \begin{itemize}[leftmargin=2em,nosep]
@@ -845,12 +1069,12 @@ Combining $s_{\mathrm{ov}} \in \{0, 1, 2\}$ gives $\mathbb{E}[|E_{\mathrm{raw}}|
 \label{subsec:deletion}
 
 \begin{proof}[Proof of Theorem~\ref{thm:mod3-cloud}]
-Define the following bad subsets of $P_{\mathrm{raw}}$:
+To prune atypical codewords while keeping nearly all close pairs, we define four bad subsets of $P_{\mathrm{raw}}$ (violating minimum distance, bounded three-way disagreements, Condition~\textbf{(Overlap)}, and Condition~\textbf{(List-Size)}, respectively):
 \begin{enumerate}[label=(\arabic*),leftmargin=2em]
-  \item $B_{\mathrm{dist}} := \bigl\{x \in P_{\mathrm{raw}} : \exists y \in P_{\mathrm{raw}} \text{ with } 1 \le \dHam(x, y) < \frac{1}{2} r_*\bigr\}$. For $1 \le s < \frac{1}{2} r_*$,~\eqref{eq:sigma-window} gives $-\gamma_0 s + \sigma_{\mathrm{edge}}\binom{s}{2} < (-5 + 6.0006 \cdot \frac{1}{2})\lambda_0 s < 0$, so $p_{\mathrm{keep}} D_\Omega(s) \le 2^{-0.747\lambda_0 r_* + 0.54 r_*} \le 2^{-0.74\lambda_0 r_*}$ by~\eqref{eq:d-omega-upper}--\eqref{eq:p-keep-bounds}, yielding $\mathbb{E}[|B_{\mathrm{dist}}|] \le n_0 r_* 2^{-0.74\lambda_0 r_*} \le n_0 2^{-0.6 \lambda_0 r_*}$.
-  \item $B_3 := \bigl\{x \in P_{\mathrm{raw}} : \exists a \in P_{\mathrm{raw}},\, z \in \Omega \text{ with } 1 \le \dHam(x, a), \dHam(x, z) \le C_1 r_* \text{ and } |D_3(x, a, z)| > \eta_0 r_*\bigr\}$. By~\eqref{eq:ball-expectation}, the expected number of pairs $(x, a) \in P_{\mathrm{raw}}^2$ with $1 \le \dHam(x, a) \le C_1 r_*$ is at most $n_0 2^{6 C_1^2 \lambda_0 r_*}$. Conditioned on $x, a \in P_{\mathrm{raw}}$, any $z \in \Omega$ with $|D_3(x, a, z)| = d_3 > \eta_0 r_*$ and $|\Delta(x, z) \setminus \Delta(x, a)| = m_{\mathrm{out}}$ ($m_{\mathrm{fresh}} := d_3 + m_{\mathrm{out}} \le C_1 r_*$) is specified by $\{v \in \Delta(x, a) : z_v = a_v\}$ ($\le 2^{C_1 r_*}$ choices), $D_3(x, a, z) \subseteq \Delta(x, a)$ ($\le 2^{C_1 r_*}$ choices), $\Delta(x, z) \setminus \Delta(x, a) \subseteq [N]$ ($\le \binom{N}{m_{\mathrm{out}}}$ choices), and colors $z_u \in [q] \setminus \{x_u\}$ on $D_3(x, a, z) \cup (\Delta(x, z) \setminus \Delta(x, a))$ ($\le (q - 1)^{m_{\mathrm{fresh}}}$ choices), while querying $m_{\mathrm{fresh}}(N - 1) - \binom{m_{\mathrm{fresh}}}{2}$ canonical entries outside $\mathcal{Q}(x, a)$ (since $z_u \notin \{x_u, a_u\}$ on all $m_{\mathrm{fresh}}$ coordinates). By~\eqref{eq:exact-calibration}, $\binom{N}{m_{\mathrm{out}}}(q - 1)^{m_{\mathrm{fresh}}} 2^{-\sigma_{\mathrm{edge}}(N - 1)m_{\mathrm{fresh}}} \le 2^{0.54 r_* - \gamma_0 m_{\mathrm{fresh}}}(4 \cdot 2^L)^{-d_3} \le 2^{0.54 r_* - \eta_0 L r_*} \le 2^{0.54 r_* - 20 C_1^2 \lambda_0 r_*}$; multiplying by the subset-choice factor $2^{2 C_1 r_*}$, the saved-pair factor $2^{\sigma_{\mathrm{edge}}\binom{m_{\mathrm{fresh}}}{2}} \le 2^{6.0006 C_1^2 \lambda_0 r_*}$, and the $(C_1 r_* + 1)^2 < r_*^4 < 2^{0.46 r_*}$ choices of $(d_3, m_{\mathrm{out}})$ (using $2 C_1 + 1 < \lambda_0$) yields $\mathbb{E}[|B_3|] \le n_0 2^{(6 C_1^2 + 6.0006 C_1^2 + 1 - 20 C_1^2)\lambda_0 r_*} \le n_0 2^{-7 C_1^2 \lambda_0 r_*} \le n_0 2^{-0.6\lambda_0 r_*}$.
-  \item $B_{\mathrm{ov}} := \bigl\{x \in P_{\mathrm{raw}} : \exists w_0 \in P_{\mathrm{raw}} \text{ ($0 < \dHam(x, w_0) \le C_1 r_*$) and } K \text{ distinct } y^{(1)}, \dots, y^{(K)} \in P_{\mathrm{raw}} \setminus \{x, w_0\} \text{ with } \dHam(x, y^{(t)}) = r_*,\; |D_3(x, w_0, y^{(t)})| \le \eta_0 r_*,\text{ and } |\Delta(x, w_0) \cap \Delta(x, y^{(t)})| > \frac{1}{4} r_*\bigr\}$. Fix $(x, w_0)$ ($\le n_0 2^{6 C_1^2 \lambda_0 r_*}$ expected pairs in $P_{\mathrm{raw}}^2$) and condition on $x, w_0 \in P_{\mathrm{raw}}$. Expose $y^{(1)}, \dots, y^{(K)}$ sequentially: before step $t \in [1, K]$, let $\mathcal{R}'_{t-1} \subseteq [N] \times [q]$ be the set of coordinate-color pairs appearing in $\{x, w_0, y^{(1)}, \dots, y^{(t-1)}\}$, and let $\mathcal{F}'_{t-1}$ be the $\sigma$-algebra generated by their keep coins and all canonical entries of $R$ with both endpoints in $\mathcal{R}'_{t-1}$ (so $x, w_0 \in P_{\mathrm{raw}}$ and the validity of $y^{(1)}, \dots, y^{(t-1)}$ are $\mathcal{F}'_{t-1}$-measurable, as the distance, $D_3$, and overlap conditions are deterministic). Then $|\mathcal{R}'_{t-1} \setminus \mathrm{graph}(x)| \le \dHam(x, w_0) + \sum_{s=1}^{t-1} \dHam(x, y^{(s)}) < (C_1 + K) r_* \le 21 C_1^2 r_*$. Any valid $y := y^{(t)} \notin \{x, w_0, y^{(1)}, \dots, y^{(t-1)}\}$ satisfies $y_v = (w_0)_v$, hence $(v, y_v) \in \mathcal{R}'_0 \subseteq \mathcal{R}'_{t-1}$, on all $> (\frac{1}{4} - \eta_0) r_* = \frac{19}{80} r_*$ coordinates $v \in \bigl(\Delta(x, w_0) \cap \Delta(x, y)\bigr) \setminus D_3(x, w_0, y)$, leaving $m := |M'| \le \frac{61}{80} r_* = 0.7625 r_*$ fresh coordinates $M' := \{u \in \Delta(x, y) : (u, y_u) \notin \mathcal{R}'_{t-1}\}$. Choosing $\{(v, y_v) : v \in \Delta(x, y) \setminus M'\} \subseteq \mathcal{R}'_{t-1} \setminus \mathrm{graph}(x)$ of size at most $r_*$ ($\le \sum_{s=0}^{r_*} \binom{21 C_1^2 r_*}{s} \le (r_* + 1)(21 e C_1^2)^{r_*} \le (r_* + 1)\,2^{0.01 \lambda_0 r_*}$ options) and $(M', (y_u)_{u \in M'})$ ($\le \binom{N}{m}(q - 1)^m$ options) queries $\xi_y = 1$ and $m(N - 1) - \binom{m}{2}$ canonical entries touching $M'$ outside $\mathcal{F}'_{t-1}$. For all $0 \le m \le 0.7625 r_*$,~\eqref{eq:sigma-window} gives $-\gamma_0 m + \sigma_{\mathrm{edge}}\binom{m}{2} \le (-5 + 6.0006 \cdot 0.7625)\lambda_0 m \le 0$, so $p_{\mathrm{keep}} D_\Omega(m) \le 2^{-0.747 \lambda_0 r_* + 0.54 r_*}$; using $(r_* + 1)^2 2^{0.54 r_*} < 2^{r_*} < 2^{0.001\lambda_0 r_*}$, step $t$ has conditional expectation given $\mathcal{F}'_{t-1}$ at most $(r_* + 1)\,2^{0.01\lambda_0 r_*} \sum_{m=0}^{\lfloor 0.7625 r_* \rfloor} p_{\mathrm{keep}} D_\Omega(m) \le 2^{(0.01 + 0.001 - 0.747)\lambda_0 r_*} \le 2^{-0.73 \lambda_0 r_*}$. Induction over $1 \le t \le K = 20 C_1^2$ and Markov's inequality on ordered $K$-tuples yield $\mathbb{E}[|B_{\mathrm{ov}}|] \le n_0 2^{(6 C_1^2 - 0.73 K)\lambda_0 r_*} \le n_0 2^{-8 C_1^2 \lambda_0 r_*} \le n_0 2^{-0.6\lambda_0 r_*}$.
-  \item $B_{\mathrm{list}} := \bigl\{a \in P_{\mathrm{raw}} : \exists b \in P_{\mathrm{raw}} \text{ ($0 < \dHam(a, b) \le C_1 r_*$) with } |\mathcal{L}_R(a, b) \cap P_{\mathrm{raw}}| \ge K\bigr\}$. Combining~\eqref{eq:ball-expectation}, Markov's inequality on ordered $K$-tuples, and Lemma~\ref{lem:list-moment} gives $\mathbb{E}[|B_{\mathrm{list}}|] \le n_0 2^{(6 C_1^2 - 8 C_1^2)\lambda_0 r_*} = n_0 2^{-2 C_1^2 \lambda_0 r_*} \le n_0 2^{-0.6\lambda_0 r_*}$.
+  \item \emph{(Too-close pairs.)} $B_{\mathrm{dist}} := \bigl\{x \in P_{\mathrm{raw}} : \exists y \in P_{\mathrm{raw}} \text{ with } 1 \le \dHam(x, y) < \frac{1}{2} r_*\bigr\}$. For $1 \le s < \frac{1}{2} r_*$,~\eqref{eq:sigma-window} gives $-\gamma_0 s + \sigma_{\mathrm{edge}}\binom{s}{2} < (-5 + 6.0006 \cdot \frac{1}{2})\lambda_0 s < 0$, so $p_{\mathrm{keep}} D_\Omega(s) \le 2^{-0.747\lambda_0 r_* + 0.54 r_*} \le 2^{-0.74\lambda_0 r_*}$ by~\eqref{eq:d-omega-upper}--\eqref{eq:p-keep-bounds}, yielding $\mathbb{E}[|B_{\mathrm{dist}}|] \le n_0 r_* 2^{-0.74\lambda_0 r_*} \le n_0 2^{-0.6 \lambda_0 r_*}$.
+  \item \emph{(Excessive three-way disagreements.)} $B_3 := \bigl\{x \in P_{\mathrm{raw}} : \exists a \in P_{\mathrm{raw}},\, z \in \Omega \text{ with } 1 \le \dHam(x, a), \dHam(x, z) \le C_1 r_* \text{ and } |D_3(x, a, z)| > \eta_0 r_*\bigr\}$. By~\eqref{eq:ball-expectation}, the expected number of pairs $(x, a) \in P_{\mathrm{raw}}^2$ with $1 \le \dHam(x, a) \le C_1 r_*$ is at most $n_0 2^{6 C_1^2 \lambda_0 r_*}$. Conditioned on $x, a \in P_{\mathrm{raw}}$, any $z \in \Omega$ with $|D_3(x, a, z)| = d_3 > \eta_0 r_*$ and $|\Delta(x, z) \setminus \Delta(x, a)| = m_{\mathrm{out}}$ ($m_{\mathrm{fresh}} := d_3 + m_{\mathrm{out}} \le C_1 r_*$) is specified by $\{v \in \Delta(x, a) : z_v = a_v\}$ ($\le 2^{C_1 r_*}$ choices), $D_3(x, a, z) \subseteq \Delta(x, a)$ ($\le 2^{C_1 r_*}$ choices), $\Delta(x, z) \setminus \Delta(x, a) \subseteq [N]$ ($\le \binom{N}{m_{\mathrm{out}}}$ choices), and colors $z_u \in [q] \setminus \{x_u\}$ on $D_3(x, a, z) \cup (\Delta(x, z) \setminus \Delta(x, a))$ ($\le (q - 1)^{m_{\mathrm{fresh}}}$ choices), while querying $m_{\mathrm{fresh}}(N - 1) - \binom{m_{\mathrm{fresh}}}{2}$ canonical entries outside $\mathcal{Q}(x, a)$ (since $z_u \notin \{x_u, a_u\}$ on all $m_{\mathrm{fresh}}$ coordinates). By~\eqref{eq:exact-calibration}, $\binom{N}{m_{\mathrm{out}}}(q - 1)^{m_{\mathrm{fresh}}} 2^{-\sigma_{\mathrm{edge}}(N - 1)m_{\mathrm{fresh}}} \le 2^{0.54 r_* - \gamma_0 m_{\mathrm{fresh}}}(4 \cdot 2^L)^{-d_3} \le 2^{0.54 r_* - \eta_0 L r_*} \le 2^{0.54 r_* - 20 C_1^2 \lambda_0 r_*}$; multiplying by the subset-choice factor $2^{2 C_1 r_*}$, the saved-pair factor $2^{\sigma_{\mathrm{edge}}\binom{m_{\mathrm{fresh}}}{2}} \le 2^{6.0006 C_1^2 \lambda_0 r_*}$, and the $(C_1 r_* + 1)^2 < r_*^4 < 2^{0.46 r_*}$ choices of $(d_3, m_{\mathrm{out}})$ (using $2 C_1 + 1 < \lambda_0$) yields $\mathbb{E}[|B_3|] \le n_0 2^{(6 C_1^2 + 6.0006 C_1^2 + 1 - 20 C_1^2)\lambda_0 r_*} \le n_0 2^{-7 C_1^2 \lambda_0 r_*} \le n_0 2^{-0.6\lambda_0 r_*}$.
+  \item \emph{(Too many aligned close partners.)} Let $B_{\mathrm{ov}}$ be the set of all $x \in P_{\mathrm{raw}}$ for which there exist $w_0 \in P_{\mathrm{raw}}$ with $0 < \dHam(x, w_0) \le C_1 r_*$ and $K$ distinct points $y^{(1)}, \dots, y^{(K)} \in P_{\mathrm{raw}} \setminus \{x, w_0\}$ satisfying $\dHam(x, y^{(t)}) = r_*$, $|D_3(x, w_0, y^{(t)})| \le \eta_0 r_*$, and $|\Delta(x, w_0) \cap \Delta(x, y^{(t)})| > \frac{1}{4} r_*$. Fix $(x, w_0)$ ($\le n_0 2^{6 C_1^2 \lambda_0 r_*}$ expected pairs in $P_{\mathrm{raw}}^2$) and condition on $x, w_0 \in P_{\mathrm{raw}}$. Expose $y^{(1)}, \dots, y^{(K)}$ sequentially: before step $t \in [1, K]$, let $\mathcal{R}'_{t-1} \subseteq [N] \times [q]$ be the set of coordinate-color pairs appearing in $\{x, w_0, y^{(1)}, \dots, y^{(t-1)}\}$, and let $\mathcal{F}'_{t-1}$ be the $\sigma$-algebra generated by their keep coins and all canonical entries of $R$ with both endpoints in $\mathcal{R}'_{t-1}$ (so $x, w_0 \in P_{\mathrm{raw}}$ and the validity of $y^{(1)}, \dots, y^{(t-1)}$ are $\mathcal{F}'_{t-1}$-measurable, as the distance, $D_3$, and overlap conditions are deterministic). Then $|\mathcal{R}'_{t-1} \setminus \mathrm{graph}(x)| \le \dHam(x, w_0) + \sum_{s=1}^{t-1} \dHam(x, y^{(s)}) < (C_1 + K) r_* \le 21 C_1^2 r_*$. Any valid $y := y^{(t)} \notin \{x, w_0, y^{(1)}, \dots, y^{(t-1)}\}$ satisfies $y_v = (w_0)_v$, hence $(v, y_v) \in \mathcal{R}'_0 \subseteq \mathcal{R}'_{t-1}$, on all $> (\frac{1}{4} - \eta_0) r_* = \frac{19}{80} r_*$ coordinates $v \in \bigl(\Delta(x, w_0) \cap \Delta(x, y)\bigr) \setminus D_3(x, w_0, y)$, leaving $m := |M'| \le \frac{61}{80} r_* = 0.7625 r_*$ fresh coordinates $M' := \{u \in \Delta(x, y) : (u, y_u) \notin \mathcal{R}'_{t-1}\}$. Choosing $\{(v, y_v) : v \in \Delta(x, y) \setminus M'\} \subseteq \mathcal{R}'_{t-1} \setminus \mathrm{graph}(x)$ of size at most $r_*$ ($\le \sum_{s=0}^{r_*} \binom{21 C_1^2 r_*}{s} \le (r_* + 1)(21 e C_1^2)^{r_*} \le (r_* + 1)\,2^{0.01 \lambda_0 r_*}$ options) and $(M', (y_u)_{u \in M'})$ ($\le \binom{N}{m}(q - 1)^m$ options) queries $\xi_y = 1$ and $m(N - 1) - \binom{m}{2}$ canonical entries touching $M'$ outside $\mathcal{F}'_{t-1}$. For all $0 \le m \le 0.7625 r_*$,~\eqref{eq:sigma-window} gives $-\gamma_0 m + \sigma_{\mathrm{edge}}\binom{m}{2} \le (-5 + 6.0006 \cdot 0.7625)\lambda_0 m \le 0$, so $p_{\mathrm{keep}} D_\Omega(m) \le 2^{-0.747 \lambda_0 r_* + 0.54 r_*}$; using $(r_* + 1)^2 2^{0.54 r_*} < 2^{r_*} < 2^{0.001\lambda_0 r_*}$, step $t$ has conditional expectation given $\mathcal{F}'_{t-1}$ at most $(r_* + 1)\,2^{0.01\lambda_0 r_*} \sum_{m=0}^{\lfloor 0.7625 r_* \rfloor} p_{\mathrm{keep}} D_\Omega(m) \le 2^{(0.01 + 0.001 - 0.747)\lambda_0 r_*} \le 2^{-0.73 \lambda_0 r_*}$. Induction over $1 \le t \le K = 20 C_1^2$ and Markov's inequality on ordered $K$-tuples yield $\mathbb{E}[|B_{\mathrm{ov}}|] \le n_0 2^{(6 C_1^2 - 0.73 K)\lambda_0 r_*} \le n_0 2^{-8 C_1^2 \lambda_0 r_*} \le n_0 2^{-0.6\lambda_0 r_*}$.
+  \item \emph{(Oversized lists.)} $B_{\mathrm{list}} := \bigl\{a \in P_{\mathrm{raw}} : \exists b \in P_{\mathrm{raw}} \text{ ($0 < \dHam(a, b) \le C_1 r_*$) with } |\mathcal{L}_R(a, b) \cap P_{\mathrm{raw}}| \ge K\bigr\}$. Combining~\eqref{eq:ball-expectation}, Markov's inequality on ordered $K$-tuples, and Lemma~\ref{lem:list-moment} gives $\mathbb{E}[|B_{\mathrm{list}}|] \le n_0 2^{(6 C_1^2 - 8 C_1^2)\lambda_0 r_*} = n_0 2^{-2 C_1^2 \lambda_0 r_*} \le n_0 2^{-0.6\lambda_0 r_*}$.
 \end{enumerate}
 
 Put $B_{\mathrm{bad}} := B_{\mathrm{dist}} \cup B_3 \cup B_{\mathrm{ov}} \cup B_{\mathrm{list}}$, so $\mathbb{E}[|B_{\mathrm{bad}}|] \le 4 n_0 2^{-0.6\lambda_0 r_*}$. By the Paley--Zygmund inequality~\cite{paley1932some,alon2016probabilistic} and Lemma~\ref{lem:second-moment}(2),
