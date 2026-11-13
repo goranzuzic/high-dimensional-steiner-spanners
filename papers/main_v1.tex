@@ -365,6 +365,11 @@ It is essential that $k_{\max} = 8 C_1$ does not depend on the length $\ell$ of 
 
 All results stated in Sections~\ref{sec:intro}--\ref{sec:warmups}, together with Lemmas~\ref{lem:interval-crossing} and~\ref{lem:list-hit}, have been formally verified in Lean~4 with Mathlib. A single specification file of $705$ lines contains every definition used in the statements and the statements of the $15$ verified results, so that a reader can check what has been proved without reading the proofs, which take nearly $15{,}000$ lines. The proofs contain no unproved steps, use only the three standard axioms of Lean, and have been re-checked by an independent run of the Lean kernel. The Lean development is available at \href{https://github.com/goranzuzic/high-dimensional-steiner-spanners}{\texttt{https://github.com/\allowbreak goranzuzic/\allowbreak high-\allowbreak dimensional-\allowbreak steiner-\allowbreak spanners}}, and Appendix~\ref{app:lean} prints a standalone $77$-line Lean~4 specification of the main theorems alongside the inventory of all verified statements.
 
+\subsection{AI Disclosure}
+\label{subsec:ai-disclosure}
+
+A harness on top of Gemini~4 Carbon discovered the proof with minimal human steering from Goran Zuzic, David P. Woodruff, and Vahab Mirrokni, who also prepared the formal verification in Lean~4. Erik Waingarten, Rajesh Jayaram, Goran Zuzic, and David P. Woodruff prepared the presentation of the paper.
+
 \paragraph{Organization.}
 Section~\ref{sec:overview} states the three steps of the proof as Theorems~\ref{thm:mod1-projection}--\ref{thm:mod3-cloud} and derives the main theorems from them. Section~\ref{sec:warmups} contains the constructions for equidistant points and for dense subsets of the hypercube; it is not needed for the proof of the main theorems. Sections~\ref{sec:projection}, \ref{sec:combinatorics}, and~\ref{sec:csp-cloud} prove Theorems~\ref{thm:mod1-projection}, \ref{thm:mod2-combinatorial}, and~\ref{thm:mod3-cloud}, respectively, and Section~\ref{sec:open} lists open problems.
 
@@ -1166,10 +1171,6 @@ We conclude with open problems raised by Theorem~\ref{thm:main}:
   \item \textbf{Fixed hop budgets and explicit constructions.} Proposition~\ref{prop:three-hop} shows that $3$ hops suffice to span $\{0, 1\}^d$, and its dense subsets of minimum distance $\Omega(d)$, at constant stretch with near-linear size, whereas our point sets admit no sparse spanner with any number of hops. What is the exact trade-off between hops, stretch, and size for $k$-hop spanners ($k \ge 3$) in high-dimensional $\ell_1$ and $\ell_2$, and can one give deterministic polynomial-time (or strongly explicit) constructions of codes with the properties of Theorem~\ref{thm:mod3-cloud}?
   \item \textbf{Beyond undirected spanners.} Theorem~\ref{thm:main} shows that sparse undirected graphs cannot represent high-dimensional $\ell_p$ metrics within a constant factor. It does not apply to directed non-metric Steiner spanners~\cite{andoni2023subquadratic,jayaram2026near}, and it does not exclude near-linear-time algorithms that do not use spanners at all. Does the lower bound extend to directed non-metric Steiner spanners of constant stretch? And is there a constant $C$ for which a $C$-approximate bichromatic closest pair of $n$ points in $\R^{O(\log n)}$ can be found in time $n^{1 + o(1)}$~\cite{rubinstein2018hardness}?
 \end{enumerate}
-
-\section*{AI Disclosure}
-
-A harness on top of Gemini~4 Carbon discovered the proof with minimal human steering from Goran Zuzic, David P. Woodruff, and Vahab Mirrokni, who also prepared the formal verification in Lean~4. Erik Waingarten, Rajesh Jayaram, Goran Zuzic, and David P. Woodruff prepared the presentation of the paper.
 
 \bibliographystyle{alpha}
 \bibliography{references}
