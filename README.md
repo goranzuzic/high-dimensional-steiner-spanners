@@ -1,6 +1,6 @@
 # Constant-Stretch High-Dimensional Spanners Require Super-Linear Size
 
-**Authors:** Rajesh Jayaram, Vahab Mirrokni, Erik Waingarten, David P. Woodruff, and Goran Žužić
+**Authors:** Rajesh Jayaram, Vahab Mirrokni, Erik Waingarten, David P. Woodruff, and Goran Zuzic
 
 Manuscript and complete Lean 4 (`v4.27.0` / Mathlib `v4.27.0`) formal verification proving that for every $p \in [1, \infty)$ and constant stretch $C \ge 1$, high-dimensional $\ell_p$ point sets require $\Omega\bigl(n^{1 + c(C, p)}\bigr)$ edges ($c(C, p) = 2^{-O(C^{3p}\log(C^p + 1))}$) in every undirected non-metric Steiner $C$-spanner.
 
