@@ -7,7 +7,8 @@ Manuscript and complete Lean 4 (`v4.27.0` / Mathlib `v4.27.0`) formal verificati
 - **Paper (PDF):** [`papers/main_v1.pdf`](papers/main_v1.pdf) (LaTeX source: [`papers/main_v1.tex`](papers/main_v1.tex), [`papers/references.bib`](papers/references.bib))
 - **Specification (`705` lines):** [`Challenge.lean`](Challenge.lean) — 27 definitions and 15 target theorem/lemma statements
 - **Proofs (`14,769` lines, `0 sorry`):** [`Solution.lean`](Solution.lean) and [`Solution/`](Solution/) — standard axioms `[propext, Classical.choice, Quot.sound]` only
-- **Kernel Comparator Spec:** [`config.json`](config.json) ([`leanprover/comparator`](https://github.com/leanprover/comparator))
+- **Minimal specification (`77` lines, printed in Appendix A.1 of the paper):** [`MinimalChallenge.lean`](MinimalChallenge.lean) — standalone statements of Theorems 1.2 and 1.3, proved in [`MinimalSolution.lean`](MinimalSolution.lean) from the proofs in [`Solution/`](Solution/)
+- **Kernel Comparator Specs:** [`config.json`](config.json), [`config_minimal.json`](config_minimal.json) ([`leanprover/comparator`](https://github.com/leanprover/comparator))
 
 ## Paper ↔ Lean 4 Correspondence
 
@@ -18,12 +19,13 @@ Manuscript and complete Lean 4 (`v4.27.0` / Mathlib `v4.27.0`) formal verificati
 | **§3** | Propositions 3.1, 3.2, 3.4; Lemma 3.3 | `prop_3_1_diameter_bounded_bucketing`, `prop_3_2_simplex_separation`, `lem_3_3_blockwise_hamming_hubs`, `prop_3_4_three_hop_hypercube_collapse` ([`Solution/Bucketing.lean`](Solution/Bucketing.lean), [`Solution/Hamming.lean`](Solution/Hamming.lean)) |
 | **§5 & §6** | Lemma 5.1, Definition 6.1, Lemmas 6.3–6.5 | `lem_5_1_interval_crossing`, `bicliqueWitnessList`, `lem_6_3_biclique_list_hit` ([`Solution/Glue.lean`](Solution/Glue.lean), [`Solution/CSP.lean`](Solution/CSP.lean)) |
 
-`Solution` does not import `Challenge`.
+`Solution` does not import `Challenge`, and `MinimalSolution` does not import `MinimalChallenge`.
 
 ## Build & Verify
 
 ```bash
 lake exe cache get
-lake build Challenge Solution
+lake build Challenge Solution MinimalChallenge MinimalSolution
 lake env comparator config.json
+lake env comparator config_minimal.json
 ```

@@ -16,3 +16,10 @@ lean_lib Challenge where
 @[default_target]
 lean_lib Solution where
   roots := #[`Solution]
+
+lean_lib MinimalChallenge where
+  roots := #[`MinimalChallenge]
+
+@[default_target]
+lean_lib MinimalSolution where
+  roots := #[`MinimalSolution]

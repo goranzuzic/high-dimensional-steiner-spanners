@@ -1,0 +1,17 @@
+{
+  "challenge_module": "MinimalChallenge",
+  "solution_module": "MinimalSolution",
+  "theorem_names": [
+    "lpDist_eq_toLp_dist",
+    "thm_1_2_geometric_spanner_lower_bound",
+    "thm_1_3_non_metric_steiner_spanner_lower_bound"
+  ],
+  "must_resolve_all_sorries": true,
+  "allow_disproofs": false,
+  "enable_nanoda": false,
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}
