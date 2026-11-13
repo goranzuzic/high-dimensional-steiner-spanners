@@ -1176,26 +1176,15 @@ We conclude with open problems raised by Theorem~\ref{thm:main}:
 \bibliography{references}
 
 % ============================================================================
+\clearpage
 \appendix
 \section{Formally Verified Statements}
 \label{app:lean}
 % ============================================================================
 
-The formal development uses Lean~4 (\texttt{v4.27.0}) with Mathlib (\texttt{v4.27.0}) and is available at \href{https://github.com/goranzuzic/high-dimensional-steiner-spanners}{\texttt{https://github.com/\allowbreak goranzuzic/\allowbreak high-\allowbreak dimensional-\allowbreak steiner-\allowbreak spanners}}. The specification file \texttt{Challenge.lean} ($705$ lines) contains $27$ definitions of the graph, metric, hypercube, and constraint-satisfaction notions used in the paper, and the statements of the following $15$ theorems:
-\begin{itemize}[leftmargin=2em,nosep]
-  \item the agreement of $\|\cdot\|_p$ on $\R^d$ with Mathlib's \texttt{PiLp} metric;
-  \item Theorems~\ref{thm:geometric} and~\ref{thm:main}, with exponent bounds $c(C, p) \ge 2^{-M C^{3p} \log_2(C^p + 1)}$ and $c \ge 2^{-M C_1^3 \log_2 C_1}$ for an absolute constant $M$;
-  \item Corollary~\ref{cor:lp-dvoretzky}, with $c(C) \ge 2^{-M C^6 \log_2(C + 1)}$ and including a proof from first principles, via Gaussian concentration, of the embedding of $\ell_2$ into $\ell_p$ from~\cite[Example~3.1]{figiel1977dimension};
-  \item Theorems~\ref{thm:mod1-projection}(a), \ref{thm:mod1-projection}(b), \ref{thm:mod2-combinatorial}(a), \ref{thm:mod2-combinatorial}(b), and~\ref{thm:mod3-cloud};
-  \item Propositions~\ref{prop:bucketing}, \ref{prop:simplex}, and~\ref{prop:three-hop};
-  \item Lemmas~\ref{lem:hamming-layer}, \ref{lem:interval-crossing}, and~\ref{lem:list-hit}, the last one for the lists of Definition~\ref{def:witness-list}.
-\end{itemize}
-The proofs, in \texttt{Solution.lean} and eight further files in \texttt{Solution/} ($14{,}769$ lines in total), compile with zero \texttt{sorry}s and depend only on the standard axioms \texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound}. They have been exported via \texttt{lean4export} and checked independently by the Lean~4 kernel via \texttt{comparator}.
+The Lean~4 (\texttt{v4.27.0} / Mathlib \texttt{v4.27.0}) development at \href{https://github.com/goranzuzic/high-dimensional-steiner-spanners}{\texttt{https://github.com/\allowbreak goranzuzic/\allowbreak high-\allowbreak dimensional-\allowbreak steiner-\allowbreak spanners}} formalizes $15$ statements in \texttt{Challenge.lean}: the agreement of \texttt{lpDist} with Mathlib's \texttt{WithLp} ($\ell_p$) metric, Theorems~\ref{thm:geometric}, \ref{thm:main}, \ref{thm:mod1-projection}(a)--(b), \ref{thm:mod2-combinatorial}(a)--(b), and~\ref{thm:mod3-cloud}, Corollary~\ref{cor:lp-dvoretzky}, Propositions~\ref{prop:bucketing}, \ref{prop:simplex}, and~\ref{prop:three-hop}, and Lemmas~\ref{lem:hamming-layer}, \ref{lem:interval-crossing}, and~\ref{lem:list-hit}. Figure~\ref{fig:lean-challenge} prints \texttt{MinimalChallenge.lean}, a standalone $77$-line specification of Theorems~\ref{thm:geometric} and~\ref{thm:main}.
 
-\subsection{Minimal Self-Contained Lean~4 Challenge Specification}
-\label{app:lean-minimal}
-
-For direct inspection without consulting the repository, Figure~\ref{fig:lean-challenge} prints a complete, standalone $77$-line Lean~4 challenge file containing every definition needed to state Theorems~\ref{thm:geometric} and~\ref{thm:main}, together with the agreement of \texttt{lpDist} with Mathlib's \texttt{WithLp} ($\ell_p$) metric. It compiles as written under Lean~4 (\texttt{v4.27.0}) and Mathlib (\texttt{v4.27.0}), and all three theorems follow from \texttt{Solution.lean} with zero \texttt{sorry}s.
+To ensure correctness, the Lean challenge statements were cleaned up, minimized, and audited against the paper by both humans and multiple independent models. The proofs (\texttt{Solution} and \texttt{MinimalSolution}) were checked with \texttt{comparator} to confirm that they match the challenge statements in the Lean kernel with zero \texttt{sorry}s and only the standard axioms, and proof faithfulness to the paper was assessed by independent models.
 
 \begin{figure}[p]
 \begin{lstlisting}[style=leanstyle]
