@@ -1,4 +1,4 @@
-# Constant-Stretch High-Dimensional Spanners Require Super-Linear Size
+# Constant-Stretch High-Dimensional Spanners Require Polynomial Overhead
 
 **Authors:** Rajesh Jayaram, Vahab Mirrokni, Erik Waingarten, David P. Woodruff, and Goran Zuzic
 

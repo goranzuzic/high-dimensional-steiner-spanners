@@ -6,11 +6,11 @@ set_option synthInstance.maxHeartbeats 200000
 open scoped ENNReal Classical
 
 /-!
-# Constant-Stretch High-Dimensional Spanners Require Super-Linear Size
+# Constant-Stretch High-Dimensional Spanners Require Polynomial Overhead
 
 Self-contained Lean 4 (`v4.27.0` / Mathlib `v4.27.0`) challenge file formalizing all main theorems,
 corollaries, three-step interfaces, Section 3 constructions, and core combinatorial/CSP lemmas
-of *Constant-Stretch High-Dimensional Spanners Require Super-Linear Size* (`papers/main_v1.tex`):
+of *Constant-Stretch High-Dimensional Spanners Require Polynomial Overhead* (`papers/main_v1.tex`):
 
 * **Section 1 (Definitions & Main Results)**:
   - `lpDist_eq_toLp_dist`: compatibility of `lpDist` with Mathlib's `PiLp` (`WithLp`) metric.
